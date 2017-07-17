@@ -15,8 +15,8 @@ class LXDHost:
 
         result = self._container.execute(command)
         if check and result.exit_code != 0:
+            print(result)
             raise FileNotFoundError
-        print('>>', [result.stdout])
         return result.stdout
 
 
