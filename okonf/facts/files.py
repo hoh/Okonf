@@ -10,7 +10,7 @@ async def file_is_present(host, path):
 async def file_hashed(host, path):
     try:
         output = await host.run("sha256sum {}".format(path))
-    except ProcessError:
+    except (ProcessError, FileNotFoundError):
         return False
     return output.split(' ', 1)[0]
 
