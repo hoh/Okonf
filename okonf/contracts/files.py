@@ -1,7 +1,4 @@
-import logging
 from tempfile import NamedTemporaryFile
-
-import asyncssh
 
 from okonf.utils import get_file_hash
 from okonf.facts.files import file_is_present, file_contains, file_hashed
@@ -22,13 +19,6 @@ async def file_(host, path, present=True):
         return await file_present(host, path)
     else:
         return await file_absent(host, path)
-
-
-async def _file_copy(host, path, local_path):
-    logging.info("sftp %s -> %s:%s", local_path, host['host'], path)
-    async with asyncssh.connect(**host) as ssh:
-        async with ssh.start_sftp_client() as sftp:
-            await sftp.put(local_path, path)
 
 
 async def file_copy(host, path, local_path: str):
