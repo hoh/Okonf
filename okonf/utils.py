@@ -9,15 +9,18 @@ def run_debug(tasks):
     for task in tasks:
         loop.run_until_complete(task)
         print('*' * 20)
+    loop.close()
 
 
 def run(*tasks, debug=False):
     if debug or '--debug' in sys.argv:
         return run_debug(tasks)
     else:
-        asyncio.get_event_loop().run_until_complete(
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(
             asyncio.gather(*tasks)
         )
+        loop.close()
 
 
 def get_local_file_hash(file_path):
