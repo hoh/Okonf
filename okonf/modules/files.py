@@ -1,9 +1,23 @@
+from abc import abstractmethod
+from hashlib import sha256
+from tempfile import NamedTemporaryFile
+
 from asyncssh import ProcessError
 
 from okonf.utils import get_local_file_hash
 
 
-class FilePresent:
+class Module:
+    @abstractmethod
+    async def check(self, host):
+        pass
+
+    @abstractmethod
+    async def apply(self, host):
+        pass
+
+
+class FilePresent(Module):
 
     def __init__(self, remote_path: str):
         self.remote_path = remote_path
@@ -16,7 +30,7 @@ class FilePresent:
         await host.run("touch {}".format(self.remote_path))
 
 
-class FileHash:
+class FileHash(Module):
 
     def __init__(self, remote_path, hash):
         self.remote_path = remote_path
@@ -37,7 +51,7 @@ class FileHash:
         raise NotImplemented
 
 
-class FileCopy:
+class FileCopy(Module):
 
     def __init__(self, remote_path, local_path):
         self.remote_path = remote_path
@@ -49,3 +63,20 @@ class FileCopy:
 
     async def apply(self, host):
         await host.put(self.remote_path, self.local_path)
+
+
+class FileContent(Module):
+
+    def __init__(self, remote_path, content):
+        self.remote_path = remote_path
+        self.content = content
+
+    async def check(self, host):
+        content_hash = sha256(self.content).hexdigest()
+        return await FileHash(self.remote_path, content_hash).check(host)
+
+    async def apply(self, host):
+        with NamedTemporaryFile() as tmpfile:
+            tmpfile.write(self.content)
+            tmpfile.seek(0)
+            await host.put(self.remote_path, tmpfile.name)
