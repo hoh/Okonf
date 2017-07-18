@@ -1,20 +1,10 @@
-from abc import abstractmethod
 from hashlib import sha256
 from tempfile import NamedTemporaryFile
 
 from asyncssh import ProcessError
 
+from okonf.modules.abstract import Module
 from okonf.utils import get_local_file_hash
-
-
-class Module:
-    @abstractmethod
-    async def check(self, host):
-        pass
-
-    @abstractmethod
-    async def apply(self, host):
-        pass
 
 
 class FilePresent(Module):
