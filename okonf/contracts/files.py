@@ -1,8 +1,7 @@
 from tempfile import NamedTemporaryFile
 
-from okonf.utils import get_file_hash
-from okonf.facts.files import (file_is_present, file_contains, get_file_hash,
-                               file_has_mode)
+from okonf.facts.files import (file_is_present, file_contains,
+                               file_has_mode, file_is_copy)
 
 
 async def file_present(host, path):
@@ -23,10 +22,7 @@ async def file_(host, path, present=True):
 
 
 async def file_copy(host, path, local_path: str):
-    file_hash = await get_file_hash(host, path)
-    local_hash = get_file_hash(local_path)
-
-    if file_hash != local_hash:
+    if not await file_is_copy(host, path, local_path):
         await host.put(path, local_path)
 
 

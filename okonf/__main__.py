@@ -4,7 +4,8 @@ from okonf.utils import run, setup_logger
 from okonf.connectors import SSHHost, LXDHost
 from okonf.facts import apt_upgradeable
 from okonf.contracts import (apt_updated, apt_present, apt_absent,
-    file_present, file_absent, file_content, file_copy)
+                             file_present, file_absent, file_content,
+                             file_copy)
 
 
 if __name__ == '__main__':

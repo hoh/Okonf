@@ -20,19 +20,19 @@ def run(*tasks, debug=False):
         )
 
 
-def get_file_hash(file_path):
+def get_local_file_hash(file_path):
     local_hash = subprocess.check_output(['sha256sum', file_path])
     return local_hash.split(b' ', 1)[0]
 
 
 def setup_logger(level=None):
-    rootLogger = logging.getLogger('')
+    root_logger = logging.getLogger('')
 
     if level:
-        rootLogger.setLevel(level)
+        root_logger.setLevel(level)
     elif '--debug' in sys.argv:
-        rootLogger.setLevel(logging.DEBUG)
+        root_logger.setLevel(logging.DEBUG)
     elif '--info' in sys.argv:
-        rootLogger.setLevel(logging.INFO)
+        root_logger.setLevel(logging.INFO)
     else:
-        rootLogger.setLevel(logging.WARNING)
+        root_logger.setLevel(logging.WARNING)

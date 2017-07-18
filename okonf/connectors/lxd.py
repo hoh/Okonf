@@ -19,7 +19,6 @@ class LXDHost:
             raise FileNotFoundError
         return result.stdout
 
-
     async def put(self, path, local_path):
         content = open(local_path, 'rb')
         result = self._container.files.put(path, content)
