@@ -11,4 +11,3 @@ async def container_present(lxdhost, name):
     if not await container_is_present(lxdhost, name):
         container = lxdhost.containers.create(config, wait=True)
         container.start()
-

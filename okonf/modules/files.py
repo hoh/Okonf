@@ -18,6 +18,7 @@ class FilePresent(Module):
 
     async def apply(self, host):
         await host.run("touch {}".format(self.remote_path))
+        return True
 
 
 class FileHash(Module):
@@ -53,6 +54,7 @@ class FileCopy(Module):
 
     async def apply(self, host):
         await host.put(self.remote_path, self.local_path)
+        return True
 
 
 class FileContent(Module):
@@ -62,7 +64,7 @@ class FileContent(Module):
         self.content = content
 
     async def check(self, host):
-        content_hash = sha256(self.content).hexdigest()
+        content_hash = sha256(self.content).hexdigest().encode()
         return await FileHash(self.remote_path, content_hash).check(host)
 
     async def apply(self, host):
@@ -70,3 +72,4 @@ class FileContent(Module):
             tmpfile.write(self.content)
             tmpfile.seek(0)
             await host.put(self.remote_path, tmpfile.name)
+        return True
