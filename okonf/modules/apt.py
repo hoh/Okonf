@@ -52,7 +52,7 @@ class AptUpdated(Module):
         }
 
     async def check(self, host):
-        upgradeable = await self.check(host)
+        upgradeable = await self.info(host)
         return len(upgradeable) == 0
 
     async def apply(self, host):
