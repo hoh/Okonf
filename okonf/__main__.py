@@ -8,10 +8,10 @@ from okonf.modules.files import FilePresent, FileCopy, FileContent
 async def check_apply(step, host):
     if isinstance(step, list):
         # ordered
-        return [
-            await check_apply(s, host)
-            for s in step
-        ]
+        result = []
+        for s in step:
+            result.append(await check_apply(s, host))
+        return result
     elif isinstance(step, tuple):
         # unordered
         return await asyncio.gather(
