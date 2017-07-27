@@ -19,10 +19,10 @@ async def check_apply(step, host):
               for s in step)
         )
     else:
-        if not await step.check(host):
-            return await step.apply(host)
+        if hasattr(step, 'submodules'):
+            return await check_apply(await step.submodules(host), host)
         else:
-            return False
+            return await step.check_apply(host)
 
 
 async def check(step, host):
