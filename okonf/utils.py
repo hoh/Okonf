@@ -1,4 +1,5 @@
 import sys
+from os.path import isfile
 import logging
 import asyncio
 import subprocess
@@ -24,6 +25,9 @@ def run(*tasks, debug=False):
 
 
 def get_local_file_hash(file_path):
+    if not isfile(file_path):
+        raise FileNotFoundError("No such file or directory: '{}'"
+                                .format(file_path))
     local_hash = subprocess.check_output(['sha256sum', file_path])
     return local_hash.split(b' ', 1)[0]
 
