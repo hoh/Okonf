@@ -1,5 +1,6 @@
 import logging
 import asyncio
+from os.path import expanduser
 from shutil import copyfile
 
 from okonf.connectors.exceptions import NoSuchFileError, ShellError
@@ -37,4 +38,5 @@ class LocalHost:
         return result.decode()
 
     async def put(self, path, local_path):
+        path = expanduser(path)
         copyfile(local_path, path)
