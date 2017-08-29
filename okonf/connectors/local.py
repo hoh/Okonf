@@ -19,9 +19,7 @@ class LocalHost:
 
         logging.debug('RET %s', [process.returncode])
 
-        print('D', dir(process))
-
-        if no_such_file and process.returncode is None:
+        if no_such_file and process.returncode not in (None, 0, '0'):
             stderr = await process.stderr.read()
             if stderr.endswith(b'No such file or directory\n'):
                 raise NoSuchFileError(process.returncode,
