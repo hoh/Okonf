@@ -47,7 +47,7 @@ class FileHash(Module):
         try:
             output = await host.run("sha256sum {}".format(self.remote_path),
                                     no_such_file=True)
-        except (ProcessError, NoSuchFileError):
+        except (NoSuchFileError):
             return False
         return output.split(' ', 1)[0].encode()
 
