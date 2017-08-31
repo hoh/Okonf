@@ -15,7 +15,8 @@ class GitClone(Module):
         if not await DirectoryPresent(self.directory).check(host):
             logging.debug("Git directory absent: {}".format(self.directory))
             return False
-        command = "git -C {} rev-parse --abbrev-ref HEAD".format(self.directory)
+        command = "git -C {} rev-parse --abbrev-ref HEAD" \
+                  .format(self.directory)
         branch_name = await host.run(command)
         return branch_name.strip()
 
@@ -24,6 +25,6 @@ class GitClone(Module):
         return branch == self.branch
 
     async def apply(self, host):
-        await host.run("git clone {} {}".format(self.repository, self.directory))
+        await host.run("git clone {} {}"
+                       .format(self.repository, self.directory))
         return True
-
