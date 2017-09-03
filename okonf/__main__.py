@@ -1,8 +1,9 @@
 import asyncio
+import logging
 
 from okonf.utils import run, setup_logger
-from okonf.connectors import SSHHost, LXDHost, LocalHost
-from okonf.modules.files import FilePresent, FileCopy, FileContent
+from okonf.connectors import LocalHost
+from okonf.modules.files import FileContent
 
 
 async def check_apply(step, host):
@@ -38,28 +39,16 @@ async def check(step, host):
         return result
 
 
-async def main_async(host):
-    sequence = [
-        FilePresent('/tmp/plop'),
-        FileCopy('/tmp/README2', 'README.md'),
-        (
-            FilePresent('/tmp/async'),
-            FilePresent('/tmp/asonc'),
-        ),
-        FileContent('/tmp/LOL', b'lol'),
-    ]
-    print(await check(sequence, host))
-    print(await check_apply(sequence, host))
+config_list = [
+    FileContent('/tmp/Hello_from_Okonf', b"Hello from Okonf"),
+]
 
 
 def main():
     setup_logger()
-
-    # host = SSHHost(host='10.42.101.251', username='ubuntu',
-    #                password='plopplop')
-    # host = LXDHost(name='test-dyscover')
     host = LocalHost()
-    run(main_async(host))
+    result = run(check_apply(config_list, host))
+    logging.info(result)
 
 
 if __name__ == '__main__':
