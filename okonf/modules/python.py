@@ -47,6 +47,8 @@ class PipInstalled(Module):
 
     async def info(self, host):
         if self.virtualenv:
+            if not await Virtualenv(self.virtualenv).check(host):
+                return {}
             command = "{}/bin/pip freeze".format(self.virtualenv)
         else:
             command = "pip freeze"
