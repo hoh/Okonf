@@ -7,6 +7,7 @@ import subprocess
 
 def run_debug(tasks):
     loop = asyncio.get_event_loop()
+    loop.set_debug(True)
     for task in tasks:
         loop.run_until_complete(task)
         print('*' * 20)
@@ -18,10 +19,11 @@ def run(*tasks, debug=False):
         return run_debug(tasks)
     else:
         loop = asyncio.get_event_loop()
-        loop.run_until_complete(
+        result = loop.run_until_complete(
             asyncio.gather(*tasks)
         )
         loop.close()
+        return result
 
 
 def get_local_file_hash(file_path):
