@@ -3,8 +3,6 @@ from os.path import join
 from hashlib import sha256
 from tempfile import NamedTemporaryFile
 
-from asyncssh import ProcessError
-
 from okonf.connectors.exceptions import NoSuchFileError
 from okonf.modules.abstract import Module
 from okonf.utils import get_local_file_hash
