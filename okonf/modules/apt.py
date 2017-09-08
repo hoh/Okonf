@@ -32,6 +32,7 @@ class AptPresent(Module):
 
     async def apply(self, host):
         await host.run("sudo apt-get install -y {}".format(self.name))
+        return True
 
 
 class AptUpdated(Module):
@@ -57,3 +58,4 @@ class AptUpdated(Module):
 
     async def apply(self, host):
         await host.run("sudo apt-get update")
+        return True
