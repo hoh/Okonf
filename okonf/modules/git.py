@@ -31,3 +31,7 @@ class GitClone(Module):
         await host.run("git clone {} {}"
                        .format(self.repository, self.directory))
         return True
+
+    @property
+    def description(self):
+        return str(self.directory)

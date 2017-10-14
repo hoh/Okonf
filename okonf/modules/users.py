@@ -1,5 +1,3 @@
-from typing import List
-
 from okonf.modules.abstract import Module
 
 
@@ -25,3 +23,7 @@ class GroupMember(Module):
     async def apply(self, host):
         await host.run("sudo adduser {} {}".format(self.username, self.group))
         return True
+
+    @property
+    def description(self):
+        return str("{} in {}".format(self.username, self.group))

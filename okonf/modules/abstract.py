@@ -1,3 +1,4 @@
+import colorama
 from abc import abstractmethod
 
 
@@ -13,3 +14,13 @@ class Module:
     async def check_apply(self, host):
         if not await self.check(host):
             return await self.apply(host)
+
+    @property
+    def description(self):
+        return str(self.__dict__)
+
+    def __str__(self):
+        arguments = (colorama.Fore.CYAN +
+                     str(self.description) +
+                     colorama.Style.RESET_ALL)
+        return ' '.join((self.__class__.__name__, arguments))

@@ -1,5 +1,7 @@
 import logging
 import asyncio
+
+import colorama
 from os.path import expanduser
 from shutil import copyfile
 
@@ -12,7 +14,8 @@ class LocalHost:
         pass
 
     async def run(self, command, check=True, no_such_file=False):
-        logging.info("run $ %s", command)
+        logging.debug("run locally " + colorama.Fore.YELLOW + "$ %s", command)
+        colorama.reinit()
 
         process = await asyncio.create_subprocess_shell(
             cmd=command, stdout=asyncio.subprocess.PIPE,

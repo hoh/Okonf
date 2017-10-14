@@ -36,6 +36,10 @@ class Virtualenv(Module):
         await host.run(command)
         return True
 
+    @property
+    def description(self):
+        return self.path
+
 
 class PipInstalled(Module):
 
@@ -85,3 +89,7 @@ class PipInstalled(Module):
         command = "{} install {}".format(pip, ' '.join(self.packages))
         await host.run(command)
         return True
+
+    @property
+    def description(self):
+        return str("{} in {}".format(','.join(self.packages), self.virtualenv))

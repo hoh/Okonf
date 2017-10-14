@@ -34,6 +34,10 @@ class AptPresent(Module):
         await host.run("sudo apt-get install -y {}".format(self.name))
         return True
 
+    @property
+    def description(self):
+        return str(self.name)
+
 
 class AptUpdated(Module):
 

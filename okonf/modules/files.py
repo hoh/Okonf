@@ -82,6 +82,10 @@ class FileCopy(Module):
         await host.put(self.remote_path, self.local_path)
         return True
 
+    @property
+    def description(self):
+        return str(self.remote_path)
+
 
 class FileContent(Module):
     """Ensure that a file has a given content"""
@@ -115,6 +119,10 @@ class DirectoryPresent(Module):
     async def apply(self, host):
         await host.run("mkdir -p {}".format(self.remote_path))
         return True
+
+    @property
+    def description(self):
+        return str(self.remote_path)
 
 
 class DirectoryAbsent(DirectoryPresent):
