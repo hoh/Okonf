@@ -8,7 +8,7 @@ class Virtualenv(Module):
     """Ensure that a virtual environment is present"""
 
     def __init__(self, path: str, python: str='python3', site_packages=False,
-                 always_copy=False):
+                 always_copy=False) -> None:
         self.path = path
         self.python = python
         self.site_packages = site_packages
@@ -44,7 +44,7 @@ class Virtualenv(Module):
 class PipInstalled(Module):
 
     def __init__(self, packages: Iterable[str], virtualenv: str=None,
-                 latest: bool=False):
+                 latest: bool=False) -> None:
         self.packages = packages
         self.virtualenv = virtualenv
         self.latest = latest

@@ -6,7 +6,8 @@ from okonf.modules.files import DirectoryPresent
 
 class GitClone(Module):
 
-    def __init__(self, repository: str, directory: str, branch: str=None):
+    def __init__(self, repository: str, directory: str,
+                 branch: str=None) -> None:
         self.repository = repository
         self.directory = directory
         self.branch = branch
