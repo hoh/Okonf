@@ -139,9 +139,11 @@ class DirectoryAbsent(DirectoryPresent):
 class DirectoryCopy(Module):
     """Ensure that a remote directory contains a copy of a local one"""
 
-    def __init__(self, remote_path: str, local_path: str) -> None:
+    def __init__(self, remote_path: str, local_path: str,
+                 delete: bool=False) -> None:
         self.remote_path = remote_path
         self.local_path = local_path
+        self.delete = delete
 
     async def info_files_hash(self, host) -> dict:
         try:
@@ -162,18 +164,18 @@ class DirectoryCopy(Module):
             command = "find {} -type d".format(self.remote_path)
             output = await host.run(command, no_such_file=True)
             result = output.strip().split('\n')
-            return result
+            return result if result != [''] else []
         except NoSuchFileError as error:
             return []
 
-    def _get_remote_path(self, path):
-        assert path.startswith(self.local_path)
-        rel_path = path[len(self.local_path):].strip('/')
+    def _get_remote_path(self, local_path):
+        assert local_path.startswith(self.local_path)
+        rel_path = local_path[len(self.local_path):].strip('/')
         return join(self.remote_path, rel_path)
 
-    def _get_local_path(self, path):
-        assert path.startswith(self.remote_path)
-        rel_path = path[len(self.remote_path):].strip('/')
+    def _get_local_path(self, remote_path):
+        assert remote_path.startswith(self.remote_path)
+        rel_path = remote_path[len(self.remote_path):].strip('/')
         return join(self.local_path, rel_path)
 
     async def submodules(self, host):
@@ -204,16 +206,20 @@ class DirectoryCopy(Module):
                              remote_hash=existing_files.get(remote_path))
                 )
 
-        for filepath in existing_files:
-            local_path = self._get_local_path(filepath)
-            if not os.path.isfile(local_path):
-                files_to_remove.append(FileAbsent(filepath))
+        if self.delete:
+            for filepath in existing_files:
+                local_path = self._get_local_path(filepath)
+                if not os.path.isfile(local_path):
+                    files_to_remove.append(FileAbsent(filepath))
 
-        existing_dirs = await self.info_dirs_present(host)
-        for dirname in existing_dirs:
-            local_path = self._get_local_path(dirname)
-            if not os.path.isdir(local_path):
-                dirs_to_remove.append(DirectoryAbsent(dirname))
+            existing_dirs = await self.info_dirs_present(host)
+            for dirname in existing_dirs:
+                local_path = self._get_local_path(dirname)
+                if not os.path.isdir(local_path):
+                    dirs_to_remove.append(DirectoryAbsent(dirname))
+        else:
+            files_to_remove = []
+            dirs_to_remove = []
 
         return (
             # Both copy/creation and removal can be concurrent:

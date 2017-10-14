@@ -14,15 +14,12 @@ def run_debug(tasks):
     loop.close()
 
 
-def run(*tasks, debug=False):
+def run(task, debug=False):
     if debug or '--debug' in sys.argv:
-        return run_debug(tasks)
+        return run_debug(task)
     else:
         loop = asyncio.get_event_loop()
-        result = loop.run_until_complete(
-            asyncio.gather(*tasks)
-        )
-        loop.close()
+        result = loop.run_until_complete(task)
         return result
 
 

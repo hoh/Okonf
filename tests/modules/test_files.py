@@ -1,7 +1,11 @@
 import os
 import pytest
+from shutil import rmtree
+
 from okonf.connectors import LocalHost
-from okonf.modules.files import FilePresent, FileAbsent, FileHash
+from okonf.modules.files import FilePresent, FileAbsent, FileHash, FileCopy, \
+    FileContent, DirectoryPresent, DirectoryAbsent, DirectoryCopy
+from okonf.__main__ import check, check_apply
 
 
 @pytest.mark.asyncio
@@ -47,3 +51,85 @@ async def test_FileHash():
         assert await FileHash(filename, expected_hash).check(host) is True
     finally:
         os.remove(filename)
+
+
+@pytest.mark.asyncio
+async def test_FileCopy():
+    host = LocalHost()
+    remote_path = '/tmp/filename'
+    local_path = 'tests/modules/test_files.py'
+
+    assert not os.path.isfile(remote_path)
+    assert await FileCopy(remote_path, local_path).check(host) is False
+    try:
+        assert await FileCopy(remote_path, local_path).apply(host) is True
+        assert open(local_path, 'rb').read() == open(remote_path, 'rb').read()
+    finally:
+        os.remove(remote_path)
+
+
+@pytest.mark.asyncio
+async def test_FileContent():
+    host = LocalHost()
+    remote_path = '/tmp/filename'
+    content = b'content'
+
+    assert not os.path.isfile(remote_path)
+    assert await FileContent(remote_path, content).check(host) is False
+    try:
+        assert await FileContent(remote_path, content).apply(host) is True
+        assert open(remote_path, 'rb').read() == content
+    finally:
+        os.remove(remote_path)
+
+
+@pytest.mark.asyncio
+async def test_DirectoryPresent():
+    host = LocalHost()
+    assert await DirectoryPresent('/etc').check(host) is True
+
+    remote_path = '/tmp/filename'
+    assert not os.path.isdir(remote_path)
+    assert await DirectoryPresent(remote_path).check(host) is False
+
+    try:
+        assert await DirectoryPresent(remote_path).apply(host) is True
+        assert os.path.isdir(remote_path)
+        assert await DirectoryPresent(remote_path).check(host) is True
+    finally:
+        os.rmdir(remote_path)
+
+
+@pytest.mark.asyncio
+async def test_DirectoryAbsent():
+    host = LocalHost()
+    remote_path = '/tmp/dirname'
+    assert await DirectoryAbsent(remote_path).check(host) is True
+    try:
+        os.makedirs(remote_path)
+        assert await DirectoryAbsent(remote_path).check(host) is False
+        assert await DirectoryAbsent(remote_path).apply(host) is True
+    finally:
+        assert not os.path.isdir(remote_path)
+
+
+@pytest.mark.asyncio
+async def test_DirectoryCopy():
+    host = LocalHost()
+    local_path = 'tests'
+    remote_path = '/tmp/dirname'
+
+    # TODO: handle recursive modules, check() should return False
+    assert await check(DirectoryCopy(remote_path, local_path), host) is None
+    try:
+        assert await check_apply(
+            DirectoryCopy(remote_path, local_path), host) == \
+               [[[True, True, True],
+                 [True, True, True, True, True, True]],
+                [[],
+                 []]]
+        # TODO: handle recursive modules, check() should return False
+        assert await check(
+            DirectoryCopy(remote_path, local_path), host) is None
+    finally:
+        rmtree(remote_path)
