@@ -122,12 +122,11 @@ async def test_DirectoryCopy():
     # TODO: handle recursive modules, check() should return False
     assert await check(DirectoryCopy(remote_path, local_path), host) is None
     try:
-        assert await check_apply(
-            DirectoryCopy(remote_path, local_path), host) == \
-               [[[True, True, True],
-                 [True, True, True, True, True, True]],
-                [[],
-                 []]]
+        result = await check_apply(
+            DirectoryCopy(remote_path, local_path), host)
+        assert len(result) == 2
+        assert len(result[0][0]) > 0
+        assert len(result[0][1]) > 0
         # TODO: handle recursive modules, check() should return False
         assert await check(
             DirectoryCopy(remote_path, local_path), host) is None
