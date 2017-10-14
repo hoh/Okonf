@@ -1,6 +1,8 @@
 FROM debian:stretch
 
-RUN apt-get update && apt-get -y upgrade && apt-get -y install virtualenv sudo git
+RUN apt-get update && apt-get -y upgrade && apt-get -y install \
+    virtualenv sudo git openssh-server
+
 RUN virtualenv -p python3 /opt/venv
 
 COPY requirements /opt/requirements
