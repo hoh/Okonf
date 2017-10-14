@@ -13,7 +13,8 @@ COPY okonf /opt/okonf
 COPY tests /opt/tests
 COPY run_tests.sh /opt/run_tests.sh
 
-ENV PYTHONPATH="/opt/"
-WORKDIR /opt
+# Load the virtualenv
+ENV PATH="/opt/venv/bin:$PATH"
+ENV PYTHONPATH="/opt/:/opt/venv/lib/python3.5"
 
-CMD ["/opt/venv/bin/pytest", "--cov=okonf", "--flakes", "--pep8", "tests", "okonf"]
+WORKDIR /opt

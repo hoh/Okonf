@@ -1,3 +1,8 @@
 #!/usr/bin/env bash
 
-pytest --cov=okonf --flakes --pep8 okonf
+set -e
+
+pytest --cov=okonf --flakes --pep8 okonf tests
+
+echo "Running Mypy"
+mypy --ignore-missing-imports okonf

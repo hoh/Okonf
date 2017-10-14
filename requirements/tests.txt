@@ -3,3 +3,5 @@ pytest-cov
 pytest-flakes
 pytest-pycodestyle
 pytest-asyncio
+
+mypy
