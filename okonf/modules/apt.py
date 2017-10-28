@@ -20,8 +20,9 @@ def parse_upgradeable(lines):
 
 class AptPresent(Module):
 
-    def __init__(self, name):
+    def __init__(self, name, sudo=True):
         self.name = name
+        self.sudo = sudo
 
     async def check(self, host):
         status = await host.run("dpkg -l {}".format(self.name), check=False)
@@ -31,7 +32,10 @@ class AptPresent(Module):
         return False
 
     async def apply(self, host):
-        await host.run("sudo apt-get install -y {}".format(self.name))
+        if self.sudo:
+            await host.run("sudo apt-get install -y {}".format(self.name))
+        else:
+            await host.run("apt-get install -y {}".format(self.name))
         return True
 
     @property
