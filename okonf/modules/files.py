@@ -3,6 +3,8 @@ from os.path import join
 from hashlib import sha256
 from tempfile import NamedTemporaryFile
 
+from okonf import Collection, Sequence
+from okonf.modules.collections import MultipleCheckResults
 from okonf.connectors.exceptions import NoSuchFileError
 from okonf.modules.abstract import Module
 from okonf.utils import get_local_file_hash
@@ -221,14 +223,22 @@ class DirectoryCopy(Module):
             files_to_remove = []
             dirs_to_remove = []
 
-        return (
+        return Collection((
             # Both copy/creation and removal can be concurrent:
-            [
+            Sequence((
                 # Must create directories before files
-                dirs_to_create, files_to_copy,
-            ],
-            [
+                Collection(dirs_to_create), Collection(files_to_copy),
+            )),
+            Sequence((
                 # Must remove files before directories
-                files_to_remove, dirs_to_remove,
-            ]
-        )
+                Collection(files_to_remove), Collection(dirs_to_remove),
+            )),
+        ))
+
+    async def check(self, host):
+        modules = await self.submodules(host)
+        return MultipleCheckResults(await modules.check(host))
+
+    async def check_apply(self, host):
+        modules = await self.submodules(host)
+        return await modules.check_apply(host)

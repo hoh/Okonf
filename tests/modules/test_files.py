@@ -5,7 +5,6 @@ from shutil import rmtree
 from okonf.connectors import LocalHost
 from okonf.modules.files import FilePresent, FileAbsent, FileHash, FileCopy, \
     FileContent, DirectoryPresent, DirectoryAbsent, DirectoryCopy
-from okonf.__main__ import check, check_apply
 
 
 @pytest.mark.asyncio
@@ -120,15 +119,13 @@ async def test_DirectoryCopy():
     remote_path = '/tmp/dirname'
 
     # TODO: handle recursive modules, check() should return False
-    assert await check(DirectoryCopy(remote_path, local_path), host) is None
+    assert not await DirectoryCopy(remote_path, local_path).check(host)
     try:
-        result = await check_apply(
-            DirectoryCopy(remote_path, local_path), host)
+        result = await DirectoryCopy(remote_path, local_path).check_apply(host)
         assert len(result) == 2
         assert len(result[0][0]) > 0
         assert len(result[0][1]) > 0
         # TODO: handle recursive modules, check() should return False
-        assert await check(
-            DirectoryCopy(remote_path, local_path), host) is None
+        assert not await DirectoryCopy(remote_path, local_path).check(host)
     finally:
         rmtree(remote_path)
