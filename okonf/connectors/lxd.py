@@ -30,6 +30,8 @@ class LXDHost:
         return result.stdout
 
     async def put(self, path, local_path):
+        if path.startswith('~/'):
+            path = '/root/' + path[2:]
         content = open(local_path, 'rb')
         result = self._container.files.put(path, content)
         print('put result', result)
