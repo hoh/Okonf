@@ -1,9 +1,9 @@
 import json
 
-from okonf.modules.abstract import Module
+from okonf.facts.abstract import Fact
 
 
-class Container(Module):
+class Container(Fact):
 
     def __init__(self, name: str, image: str='images:debian/stretch') -> None:
         self.name = name

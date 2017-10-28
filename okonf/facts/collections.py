@@ -3,7 +3,7 @@ import logging
 
 from colorama import Fore
 
-from okonf.modules.abstract import Module
+from okonf.facts.abstract import Fact
 
 
 def all_true(iterable):
@@ -72,38 +72,38 @@ async def log_apply_result(step, coroutine):
     return result
 
 
-class Collection(Module):
+class Collection(Fact):
     """
-    Unordered collection of modules. All will be applied together
+    Unordered collection of facts. All will be applied together
     asynchronously.
     """
-    def __init__(self, modules):
-        self.modules = list(modules)
+    def __init__(self, facts):
+        self.facts = list(facts)
 
     async def check(self, host):
         """
-        Check the state of the module; Checks are executed in parallel, not
+        Check the state of the fact; Checks are executed in parallel, not
         in order, as they do not have side-effects.
         :param host:
         :return:
         """
         result = await asyncio.gather(
             *(log_check_result(step, step.check(host))
-              for step in self.modules)
+              for step in self.facts)
         )
         return MultipleCheckResults(result)
 
     async def apply(self, host):
         result = await asyncio.gather(
             *(log_apply_result(step, step.apply(host))
-              for step in self.modules)
+              for step in self.facts)
         )
         return MultipleApplyResults(result)
 
     async def check_apply(self, host):
         result = await asyncio.gather(
             *(log_apply_result(step, step.check_apply(host))
-              for step in self.modules)
+              for step in self.facts)
         )
         return MultipleApplyResults(result)
 
@@ -111,36 +111,36 @@ class Collection(Module):
         if isinstance(other, Sequence):
             return Sequence([self, other])
         elif isinstance(other, Collection):
-            return Collection(self.modules + other.modules)
+            return Collection(self.facts + other.facts)
         else:
             raise TypeError("Unsupported type: %s", type(other))
 
     def __str__(self):
-        module_names = [str(module_) for module_ in self.modules]
-        return "\n - ".join([self.__class__.__name__] + module_names)
+        fact_names = [str(fact) for fact in self.facts]
+        return "\n - ".join([self.__class__.__name__] + fact_names)
 
 
 class Sequence(Collection):
     """
-    Ordered collection of modules. Each will be applied after the previous one.
+    Ordered collection of facts. Each will be applied after the previous one.
     """
 
     async def apply(self, host):
         result = []
-        for step in self.modules:
+        for step in self.facts:
             result.append(await step.apply(host))
         return MultipleApplyResults(result)
 
     async def check_apply(self, host):
         result = []
-        for step in self.modules:
+        for step in self.facts:
             coroutine = step.check_apply(host)
             result.append(await log_apply_result(step, coroutine))
         return MultipleApplyResults(result)
 
     def __add__(self, other):
         if isinstance(other, Sequence):
-            return Sequence(self.modules + other.modules)
+            return Sequence(self.facts + other.facts)
         elif isinstance(other, Collection):
             return Sequence([self, other])
         else:

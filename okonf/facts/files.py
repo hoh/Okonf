@@ -4,13 +4,13 @@ from hashlib import sha256
 from tempfile import NamedTemporaryFile
 
 from okonf import Collection, Sequence
-from okonf.modules.collections import MultipleCheckResults
+from okonf.facts.collections import MultipleCheckResults
 from okonf.connectors.exceptions import NoSuchFileError
-from okonf.modules.abstract import Module
+from okonf.facts.abstract import Fact
 from okonf.utils import get_local_file_hash
 
 
-class FilePresent(Module):
+class FilePresent(Fact):
     """Ensure that a file is present"""
 
     def __init__(self, remote_path: str) -> None:
@@ -36,7 +36,7 @@ class FileAbsent(FilePresent):
         return True
 
 
-class FileHash(Module):
+class FileHash(Fact):
     """Ensure that a file has a given hash"""
 
     def __init__(self, remote_path, hash):
@@ -59,7 +59,7 @@ class FileHash(Module):
         raise NotImplemented
 
 
-class FileCopy(Module):
+class FileCopy(Fact):
     """Ensure that a file is a copy of a local file"""
 
     def __init__(self, remote_path, local_path, remote_hash=None):
@@ -89,7 +89,7 @@ class FileCopy(Module):
         return str(self.remote_path)
 
 
-class FileContent(Module):
+class FileContent(Fact):
     """Ensure that a file has a given content"""
 
     def __init__(self, remote_path, content):
@@ -108,7 +108,7 @@ class FileContent(Module):
         return True
 
 
-class DirectoryPresent(Module):
+class DirectoryPresent(Fact):
     """Ensure that a directory is present"""
 
     def __init__(self, remote_path: str) -> None:
@@ -138,7 +138,7 @@ class DirectoryAbsent(DirectoryPresent):
         return True
 
 
-class DirectoryCopy(Module):
+class DirectoryCopy(Fact):
     """Ensure that a remote directory contains a copy of a local one"""
 
     def __init__(self, remote_path: str, local_path: str,
@@ -180,9 +180,9 @@ class DirectoryCopy(Module):
         rel_path = remote_path[len(self.remote_path):].strip('/')
         return join(self.local_path, rel_path)
 
-    async def submodules(self, host):
-        """This module can be defined entirely using other modules, so
-        we return a structure with these modules that can be used for both
+    async def subfacts(self, host):
+        """This fact can be defined entirely using other facts, so
+        we return a structure with these facts that can be used for both
         check and apply instead of running code."""
 
         dirs_to_create = []
@@ -236,9 +236,9 @@ class DirectoryCopy(Module):
         ))
 
     async def check(self, host):
-        modules = await self.submodules(host)
-        return MultipleCheckResults(await modules.check(host))
+        facts = await self.subfacts(host)
+        return MultipleCheckResults(await facts.check(host))
 
     async def check_apply(self, host):
-        modules = await self.submodules(host)
-        return await modules.check_apply(host)
+        facts = await self.subfacts(host)
+        return await facts.check_apply(host)

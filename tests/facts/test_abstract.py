@@ -3,7 +3,7 @@ import pytest
 
 from okonf.connectors import LocalHost
 from okonf import Collection, Sequence
-from okonf.modules.files import FilePresent
+from okonf.facts.files import FilePresent
 
 
 @pytest.mark.asyncio

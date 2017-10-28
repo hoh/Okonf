@@ -3,7 +3,7 @@ import pytest
 from shutil import copyfile
 
 from okonf.connectors import SSHHost
-from okonf.modules.files import FilePresent
+from okonf.facts.files import FilePresent
 
 
 @pytest.mark.asyncio

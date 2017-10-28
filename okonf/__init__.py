@@ -1,7 +1,7 @@
 import okonf.connectors
-import okonf.modules
+import okonf.facts
 import okonf.utils
-from okonf.modules.collections import Sequence, Collection
+from okonf.facts.collections import Sequence, Collection
 
 assert Sequence
 assert Collection

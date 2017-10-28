@@ -1,8 +1,8 @@
 import pytest
 
 from okonf.connectors import LocalHost
-from okonf.modules.apt import AptPresent
-from okonf.modules.git import GitClone
+from okonf.facts.apt import AptPresent
+from okonf.facts.git import GitClone
 
 
 @pytest.mark.asyncio

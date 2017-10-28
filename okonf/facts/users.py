@@ -1,7 +1,7 @@
-from okonf.modules.abstract import Module
+from okonf.facts.abstract import Fact
 
 
-class GroupMember(Module):
+class GroupMember(Fact):
     """Ensure that a user is member of a group"""
 
     def __init__(self, username: str, group: str) -> None:

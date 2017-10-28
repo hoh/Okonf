@@ -3,7 +3,7 @@ import pytest
 from shutil import rmtree
 
 from okonf.connectors import LocalHost
-from okonf.modules.files import FilePresent, FileAbsent, FileHash, FileCopy, \
+from okonf.facts.files import FilePresent, FileAbsent, FileHash, FileCopy, \
     FileContent, DirectoryPresent, DirectoryAbsent, DirectoryCopy
 
 
@@ -56,7 +56,7 @@ async def test_FileHash():
 async def test_FileCopy():
     host = LocalHost()
     remote_path = '/tmp/filename'
-    local_path = 'tests/modules/test_files.py'
+    local_path = 'tests/facts/test_files.py'
 
     assert not os.path.isfile(remote_path)
     assert await FileCopy(remote_path, local_path).check(host) is False
@@ -118,14 +118,14 @@ async def test_DirectoryCopy():
     local_path = 'tests'
     remote_path = '/tmp/dirname'
 
-    # TODO: handle recursive modules, check() should return False
+    # TODO: handle recursive facts, check() should return False
     assert not await DirectoryCopy(remote_path, local_path).check(host)
     try:
         result = await DirectoryCopy(remote_path, local_path).check_apply(host)
         assert len(result) == 2
         assert len(result[0][0]) > 0
         assert len(result[0][1]) > 0
-        # TODO: handle recursive modules, check() should return False
+        # TODO: handle recursive facts, check() should return False
         assert not await DirectoryCopy(remote_path, local_path).check(host)
     finally:
         rmtree(remote_path)

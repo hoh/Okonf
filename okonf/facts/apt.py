@@ -1,5 +1,5 @@
 import re
-from okonf.modules.abstract import Module
+from okonf.facts.abstract import Fact
 
 RE_UPGRADEABLE = '([^\/]+)\/([^\s]+)\s+([^\s]+)\s+(\w+)\s+' \
                  '\[upgradable from:\s+([^\s]+)\]$'
@@ -18,7 +18,7 @@ def parse_upgradeable(lines):
             }
 
 
-class AptPresent(Module):
+class AptPresent(Fact):
 
     def __init__(self, name, sudo=True):
         self.name = name
@@ -43,7 +43,7 @@ class AptPresent(Module):
         return str(self.name)
 
 
-class AptUpdated(Module):
+class AptUpdated(Fact):
 
     def __init__(self, names=tuple()):
         self.names = names

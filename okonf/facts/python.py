@@ -1,10 +1,10 @@
 from typing import Iterable
 
-from okonf.modules.abstract import Module
-from okonf.modules.files import FilePresent
+from okonf.facts.abstract import Fact
+from okonf.facts.files import FilePresent
 
 
-class Virtualenv(Module):
+class Virtualenv(Fact):
     """Ensure that a virtual environment is present"""
 
     def __init__(self, path: str, python: str='python3', site_packages=False,
@@ -41,7 +41,7 @@ class Virtualenv(Module):
         return self.path
 
 
-class PipInstalled(Module):
+class PipInstalled(Fact):
 
     def __init__(self, packages: Iterable[str], virtualenv: str=None,
                  latest: bool=False) -> None:

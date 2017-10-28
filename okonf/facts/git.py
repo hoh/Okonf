@@ -1,10 +1,10 @@
 import logging
 
-from okonf.modules.abstract import Module
-from okonf.modules.files import DirectoryPresent
+from okonf.facts.abstract import Fact
+from okonf.facts.files import DirectoryPresent
 
 
-class GitClone(Module):
+class GitClone(Fact):
 
     def __init__(self, repository: str, directory: str,
                  branch: str=None) -> None:

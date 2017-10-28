@@ -1,7 +1,7 @@
 import pytest
 
 from okonf.connectors import LocalHost
-from okonf.modules.users import GroupMember
+from okonf.facts.users import GroupMember
 
 
 @pytest.mark.asyncio

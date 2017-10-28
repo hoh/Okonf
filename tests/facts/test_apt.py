@@ -2,7 +2,7 @@ import os.path
 import pytest
 
 from okonf.connectors import LocalHost
-from okonf.modules.apt import AptPresent
+from okonf.facts.apt import AptPresent
 
 
 @pytest.mark.asyncio

@@ -2,7 +2,7 @@ import colorama
 from abc import abstractmethod
 
 
-class Module:
+class Fact:
     @abstractmethod
     async def check(self, host):
         pass

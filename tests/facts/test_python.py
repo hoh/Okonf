@@ -2,7 +2,7 @@ import os.path
 import pytest
 
 from okonf.connectors import LocalHost
-from okonf.modules.python import Virtualenv, PipInstalled
+from okonf.facts.python import Virtualenv, PipInstalled
 
 
 @pytest.mark.asyncio
