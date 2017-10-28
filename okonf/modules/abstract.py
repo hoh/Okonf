@@ -24,3 +24,7 @@ class Module:
                      str(self.description) +
                      colorama.Style.RESET_ALL)
         return ' '.join((self.__class__.__name__, arguments))
+
+    def __repr__(self):
+        return "<{}[{}]>".format(self.__class__.__name__,
+                                 self.description)
