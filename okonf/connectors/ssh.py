@@ -35,7 +35,10 @@ class SSHHost:
         host = self.ssh_settings['host']
         if path.startswith('~/'):
             username = self.ssh_settings['username']
-            path = "/home/{}/{}".format(username, path[2:])
+            if username == 'root':
+                path = "/root/{}".format(path[2:])
+            else:
+                path = "/home/{}/{}".format(username, path[2:])
 
         logging.info("sftp %s -> %s:%s", local_path, host, path)
         async with asyncssh.connect(**self.ssh_settings) as ssh:
