@@ -129,3 +129,25 @@ async def test_DirectoryCopy():
         assert not await DirectoryCopy(remote_path, local_path).check(host)
     finally:
         rmtree(remote_path)
+
+
+@pytest.mark.asyncio
+async def test_DirectoryCopyDelete():
+    host = LocalHost()
+    local_path = 'tests'
+    remote_path = '/tmp/dirname'
+
+    # TODO: handle recursive facts, check() should return False
+    assert not await DirectoryCopy(
+        remote_path, local_path, delete=True).check(host)
+    try:
+        result = await DirectoryCopy(
+            remote_path, local_path, delete=True).check_apply(host)
+        assert len(result) == 2
+        assert len(result[0][0]) > 0
+        assert len(result[0][1]) > 0
+        # TODO: handle recursive facts, check() should return False
+        assert not await DirectoryCopy(
+            remote_path, local_path, delete=True).check(host)
+    finally:
+        rmtree(remote_path)
