@@ -49,7 +49,7 @@ class FactCheck:
         return self.result == other
 
     def __repr__(self):
-        if self.result:
+        if bool(self):
             return "{}{} {}{}".format(
                 Fore.GREEN, 'Present', Fore.WHITE, self.fact)
         else:
@@ -74,7 +74,7 @@ class FactResult:
         return self.result == other
 
     def __repr__(self):
-        if self.result:
+        if bool(self):
             return "{}{} {}{}".format(
                 Fore.GREEN, 'Changed', Fore.WHITE, self.fact)
         else:
