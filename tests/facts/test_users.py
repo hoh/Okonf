@@ -10,6 +10,6 @@ async def test_Virtualenv():
     await host.run("useradd bob")
     await host.run("groupadd coolguys")
 
-    assert await GroupMember('bob', 'coolguys').check(host) is False
-    assert await GroupMember('bob', 'coolguys').apply(host) is True
-    assert await GroupMember('bob', 'coolguys').check(host) is True
+    assert not await GroupMember('bob', 'coolguys').check(host)
+    assert await GroupMember('bob', 'coolguys').apply(host)
+    assert await GroupMember('bob', 'coolguys').check(host)

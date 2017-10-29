@@ -4,7 +4,6 @@ from hashlib import sha256
 from tempfile import NamedTemporaryFile
 
 from okonf import Collection, Sequence
-from okonf.facts.collections import MultipleCheckResults
 from okonf.connectors.exceptions import NoSuchFileError
 from okonf.facts.abstract import Fact
 from okonf.utils import get_local_file_hash
@@ -16,11 +15,11 @@ class FilePresent(Fact):
     def __init__(self, remote_path: str) -> None:
         self.remote_path = remote_path
 
-    async def check(self, host):
+    async def enquire(self, host):
         command = "ls -d {}".format(self.remote_path)
         return await host.run(command, check=False) != ''
 
-    async def apply(self, host):
+    async def enforce(self, host):
         await host.run("touch {}".format(self.remote_path))
         return True
 
@@ -28,10 +27,10 @@ class FilePresent(Fact):
 class FileAbsent(FilePresent):
     """Ensure that a file is absent"""
 
-    async def check(self, host):
-        return not await FilePresent.check(self, host)
+    async def enquire(self, host):
+        return not await FilePresent.enquire(self, host)
 
-    async def apply(self, host):
+    async def enforce(self, host):
         await host.run("rm {}".format(self.remote_path))
         return True
 
@@ -51,11 +50,11 @@ class FileHash(Fact):
             return False
         return output.split(' ', 1)[0].encode()
 
-    async def check(self, host):
+    async def enquire(self, host):
         remote_hash = await self.get_hash(host)
         return remote_hash == self.hash
 
-    async def apply(self, host):
+    async def enforce(self, host):
         raise NotImplemented
 
 
@@ -73,14 +72,14 @@ class FileCopy(Fact):
         self.local_path = local_path
         self.remote_hash = remote_hash
 
-    async def check(self, host):
+    async def enquire(self, host):
         local_hash = get_local_file_hash(self.local_path)
         if self.remote_hash:
             return local_hash == self.remote_hash
         else:
-            return await FileHash(self.remote_path, local_hash).check(host)
+            return await FileHash(self.remote_path, local_hash).enquire(host)
 
-    async def apply(self, host):
+    async def enforce(self, host):
         await host.put(self.remote_path, self.local_path)
         return True
 
@@ -98,9 +97,10 @@ class FileContent(Fact):
 
     async def check(self, host):
         content_hash = sha256(self.content).hexdigest().encode()
-        return await FileHash(self.remote_path, content_hash).check(host)
+        return await FileHash(
+            self.remote_path, content_hash).check(host, parent=self)
 
-    async def apply(self, host):
+    async def enforce(self, host):
         with NamedTemporaryFile() as tmpfile:
             tmpfile.write(self.content)
             tmpfile.seek(0)
@@ -114,11 +114,11 @@ class DirectoryPresent(Fact):
     def __init__(self, remote_path: str) -> None:
         self.remote_path = remote_path
 
-    async def check(self, host):
+    async def enquire(self, host):
         command = "ls -d {}".format(self.remote_path)
         return await host.run(command, check=False) != ''
 
-    async def apply(self, host):
+    async def enforce(self, host):
         await host.run("mkdir -p {}".format(self.remote_path))
         return True
 
@@ -130,10 +130,10 @@ class DirectoryPresent(Fact):
 class DirectoryAbsent(DirectoryPresent):
     """Ensure that a directory is absent"""
 
-    async def check(self, host):
-        return not await DirectoryPresent.check(self, host)
+    async def enquire(self, host):
+        return not await DirectoryPresent.enquire(self, host)
 
-    async def apply(self, host):
+    async def enforce(self, host):
         await host.run("rmdir {}".format(self.remote_path))
         return True
 
@@ -235,10 +235,10 @@ class DirectoryCopy(Fact):
             )),
         ))
 
-    async def check(self, host):
+    async def check(self, host, parent=None):
         facts = await self.subfacts(host)
-        return MultipleCheckResults(await facts.check(host))
+        return await facts.check(host)
 
-    async def check_apply(self, host):
+    async def apply(self, host):
         facts = await self.subfacts(host)
-        return await facts.check_apply(host)
+        return await facts.apply(host)

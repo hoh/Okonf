@@ -16,16 +16,16 @@ async def test_FilePresent():
     os.system("ssh-keyscan localhost >> ~/.ssh/known_hosts")
     copyfile('/root/.ssh/id_rsa.pub', '/root/.ssh/authorized_keys')
 
-    assert await FilePresent('/etc/hostname').check(host) is True
+    assert await FilePresent('/etc/hostname').check(host)
 
     filename = '/tmp/filename'
     assert not os.path.isfile(filename)
-    assert await FilePresent(filename).check(host) is False
+    assert not await FilePresent(filename).check(host)
 
     try:
-        assert await FilePresent(filename).apply(host) is True
+        assert await FilePresent(filename).apply(host)
         assert os.path.isfile(filename)
-        assert await FilePresent(filename).check(host) is True
+        assert await FilePresent(filename).check(host)
     finally:
         os.remove(filename)
 
@@ -36,11 +36,12 @@ async def test_SSHHost_put():
 
     os.system("service ssh start")
     os.makedirs("/root/.ssh", exist_ok=True)
-    os.system("ssh-keygen -t rsa -N '' -f /root/.ssh/id_rsa")
-    os.system("ssh-keyscan localhost >> ~/.ssh/known_hosts")
-    copyfile('/root/.ssh/id_rsa.pub', '/root/.ssh/authorized_keys')
+    if not await FilePresent("/root/.ssh/id_rsa").check(host):
+        os.system("ssh-keygen -t rsa -N '' -f /root/.ssh/id_rsa")
+        os.system("ssh-keyscan localhost >> ~/.ssh/known_hosts")
+        copyfile('/root/.ssh/id_rsa.pub', '/root/.ssh/authorized_keys')
 
-    assert await FilePresent('/etc/hostname').check(host) is True
+    assert await FilePresent('/etc/hostname').check(host)
 
     filename1 = '/tmp/tmpfile'
     filename2 = '~/filename'
@@ -53,16 +54,16 @@ async def test_SSHHost_put():
 
     assert not os.path.isfile(filename1)
     assert not os.path.isfile(filename2)
-    assert await fact1.check(host) is False
-    assert await fact2.check(host) is False
+    assert not await fact1.check(host)
+    assert not await fact2.check(host)
 
     try:
-        assert await fact1.apply(host) is True
-        assert await fact2.apply(host) is True
+        assert await fact1.apply(host)
+        assert await fact2.apply(host)
         assert os.path.isfile(filename1)
         assert os.path.isfile(filepath2)
-        assert await fact1.check(host) is True
-        assert await fact2.check(host) is True
+        assert await fact1.check(host)
+        assert await fact2.check(host)
     finally:
         os.remove(filename1)
         os.remove(filepath2)

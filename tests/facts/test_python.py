@@ -11,11 +11,11 @@ async def test_Virtualenv():
     path = '/tmp/virtualenv'
 
     assert not os.path.exists(path)
-    assert await Virtualenv(path).check(host) is False
+    assert not await Virtualenv(path).check(host)
 
-    assert await Virtualenv(path).apply(host) is True
+    assert await Virtualenv(path).apply(host)
     assert os.path.isdir(path)
-    assert await Virtualenv(path).check(host) is True
+    assert await Virtualenv(path).check(host)
 
 
 @pytest.mark.asyncio
@@ -24,9 +24,9 @@ async def test_PipInstalled():
     packages = ['hereby']
     virtualenv = '/tmp/virtualenv'
 
-    await Virtualenv(virtualenv).check_apply(host)
+    await Virtualenv(virtualenv).apply(host)
 
-    assert await PipInstalled(packages, virtualenv).check(host) is False
+    assert not await PipInstalled(packages, virtualenv).check(host)
 
-    assert await PipInstalled(packages, virtualenv).apply(host) is True
-    assert await PipInstalled(packages, virtualenv).check(host) is True
+    assert await PipInstalled(packages, virtualenv).apply(host)
+    assert await PipInstalled(packages, virtualenv).check(host)

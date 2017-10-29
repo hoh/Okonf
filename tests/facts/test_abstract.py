@@ -28,7 +28,7 @@ async def test_Collection():
 
     try:
         assert await files_present\
-            .check_apply(host) == [None, None, True, True]
+            .apply(host) == [False, False, True, True]
 
         assert os.path.isfile(filename1)
         assert os.path.isfile(filename2)
@@ -37,7 +37,7 @@ async def test_Collection():
             .check(host) == [True, True, True, True]
 
         assert await files_present\
-            .check_apply(host) == [None, None, None, None]
+            .apply(host) == [False, False, False, False]
     finally:
         os.remove(filename1)
         os.remove(filename2)
@@ -66,7 +66,7 @@ async def test_Sequence():
 
     try:
         assert await files_present\
-            .check_apply(host) == [None, None, True, True]
+            .apply(host) == [False, False, True, True]
 
         assert os.path.isfile(filename1)
         assert os.path.isfile(filename2)
@@ -75,7 +75,7 @@ async def test_Sequence():
             .check(host) == [True, True, True, True]
 
         assert await files_present\
-            .check_apply(host) == [None, None, None, None]
+            .apply(host) == [False, False, False, False]
     finally:
         os.remove(filename1)
         os.remove(filename2)

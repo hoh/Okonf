@@ -21,14 +21,14 @@ class GitClone(Fact):
         branch_name = await host.run(command)
         return branch_name.strip()
 
-    async def check(self, host):
+    async def enquire(self, host):
         branch = await self.get_branch(host)
         if branch and not self.branch:
             return True
         else:
             return branch == self.branch
 
-    async def apply(self, host):
+    async def enforce(self, host):
         await host.run("git clone {} {}"
                        .format(self.repository, self.directory))
         return True

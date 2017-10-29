@@ -16,9 +16,9 @@ class Virtualenv(Fact):
 
     async def check(self, host):
         path = "{}/bin/python".format(self.path)
-        return await FilePresent(path).check(host)
+        return await FilePresent(path).check(host, parent=self)
 
-    async def apply(self, host):
+    async def enforce(self, host):
         command = ['virtualenv']
 
         if self.python:
@@ -66,7 +66,7 @@ class PipInstalled(Fact):
             for key, value in lines
         }
 
-    async def check(self, host):
+    async def enquire(self, host):
         installed = await self.info(host)
         for pkg in self.packages:
             if '==' in pkg:
@@ -80,7 +80,7 @@ class PipInstalled(Fact):
                     return False
         return True
 
-    async def apply(self, host):
+    async def enforce(self, host):
         if self.virtualenv:
             pip = "{}/bin/pip".format(self.virtualenv)
         else:

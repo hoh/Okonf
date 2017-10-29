@@ -24,14 +24,14 @@ class AptPresent(Fact):
         self.name = name
         self.sudo = sudo
 
-    async def check(self, host):
+    async def enquire(self, host):
         status = await host.run("dpkg -l {}".format(self.name), check=False)
         for line in status.split('\n'):
             if re.match(r"ii\s+{}\s+".format(self.name), line):
                 return True
         return False
 
-    async def apply(self, host):
+    async def enforce(self, host):
         if self.sudo:
             await host.run("sudo apt-get install -y {}".format(self.name))
         else:
@@ -60,10 +60,10 @@ class AptUpdated(Fact):
             for name, values in parse_upgradeable(status.split('\n'))
         }
 
-    async def check(self, host):
+    async def enquire(self, host):
         upgradeable = await self.info(host)
         return len(upgradeable) == 0
 
-    async def apply(self, host):
+    async def enforce(self, host):
         await host.run("sudo apt-get update")
         return True

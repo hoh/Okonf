@@ -11,8 +11,8 @@ async def test_GitClone():
     repository = 'https://github.com/hoh/Hereby.git'
     directory = '/tmp/gitrepo'
 
-    await AptPresent('git').check_apply(host)
+    await AptPresent('git').apply(host)
 
-    assert await GitClone(repository, directory).check(host) is False
-    assert await GitClone(repository, directory).apply(host) is True
-    assert await GitClone(repository, directory).check(host) is True
+    assert not await GitClone(repository, directory).check(host)
+    assert await GitClone(repository, directory).apply(host)
+    assert await GitClone(repository, directory).check(host)

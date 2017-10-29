@@ -16,11 +16,11 @@ class Container(Fact):
                     if container['name'] == self.name]
         return existing[0] if existing else None
 
-    async def check(self, host):
+    async def enquire(self, host):
         existing = await self.info(host)
         return existing is not None
 
-    async def apply(self, host):
+    async def enforce(self, host):
         await host.run("lxc launch {} {}"
                        .format(self.image, self.name))
         return True
