@@ -11,7 +11,7 @@ class Collection(Fact):
     def __init__(self, facts):
         self.facts = list(facts)
 
-    async def check(self, host, parent=None):
+    async def check(self, host):
         """
         Check the state of the fact; Checks are executed in parallel, not
         in order, as they do not have side-effects.
@@ -19,10 +19,9 @@ class Collection(Fact):
         :return:
         """
         result = await asyncio.gather(
-            *(step.check(host, parent=self)
+            *(step.check(host)
               for step in self.facts)
         )
-        # pprint(result)
         return FactCheck(self, result)
 
     async def apply(self, host):
@@ -30,7 +29,6 @@ class Collection(Fact):
             *(step.apply(host)
               for step in self.facts)
         )
-        print(result)
         return FactResult(self, result)
 
     def __add__(self, other):
@@ -54,7 +52,6 @@ class Sequence(Collection):
         result = []
         for step in self.facts:
             result.append(await step.apply(host))
-            print(result)
         return FactResult(self, result)
 
     def __add__(self, other):

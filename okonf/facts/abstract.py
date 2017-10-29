@@ -1,3 +1,5 @@
+import logging
+
 from collections import Iterable
 from typing import List, Union
 
@@ -32,12 +34,10 @@ def any_true(iterable) -> bool:
 
 class FactCheck:
 
-    def __init__(self, fact: 'Fact', result: Union[bool, List],
-                 parent: 'Fact'=None) -> None:
+    def __init__(self, fact: 'Fact', result: Union[bool, List]) -> None:
         assert isinstance(result, bool) or isinstance(result, list)
         self.fact = fact
         self.result = result
-        self.parent = parent
 
     def __bool__(self) -> bool:
         if isinstance(self.result, bool):
@@ -79,7 +79,7 @@ class FactResult:
                 Fore.GREEN, 'Changed', Fore.WHITE, self.fact)
         else:
             return "{}{} {}{}".format(
-                Fore.MAGENTA, 'Present', Fore.WHITE, self.fact)
+                Fore.MAGENTA, 'Unchanged', Fore.WHITE, self.fact)
 
 
 class Fact:
@@ -93,17 +93,19 @@ class Fact:
         "Apply the fact assuming it is not in place yet."
         pass
 
-    async def check(self, host, parent=None) -> FactCheck:
-        result = await self.enquire(host)
-        return FactCheck(self, result, parent=parent)
+    async def check(self, host) -> FactCheck:
+        result = FactCheck(self, await self.enquire(host))
+        logging.info(str(result))
+        return result
 
     async def apply(self, host) -> FactResult:
         "Apply the fact if it is not in place yet, returns higher level result"
-        if not await self.enquire(host):
-            result = await self.enforce(host)
-            return FactResult(self, result)
+        if not await self.check(host):
+            result = FactResult(self, await self.enforce(host))
         else:
-            return FactResult(self, False)
+            result = FactResult(self, False)
+        logging.info(str(result))
+        return result
 
     @property
     def description(self):

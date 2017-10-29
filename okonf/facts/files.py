@@ -98,7 +98,7 @@ class FileContent(Fact):
     async def check(self, host):
         content_hash = sha256(self.content).hexdigest().encode()
         return await FileHash(
-            self.remote_path, content_hash).check(host, parent=self)
+            self.remote_path, content_hash).check(host)
 
     async def enforce(self, host):
         with NamedTemporaryFile() as tmpfile:
@@ -235,7 +235,7 @@ class DirectoryCopy(Fact):
             )),
         ))
 
-    async def check(self, host, parent=None):
+    async def check(self, host):
         facts = await self.subfacts(host)
         return await facts.check(host)
 

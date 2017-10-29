@@ -16,7 +16,7 @@ class Virtualenv(Fact):
 
     async def check(self, host):
         path = "{}/bin/python".format(self.path)
-        return await FilePresent(path).check(host, parent=self)
+        return await FilePresent(path).check(host)
 
     async def enforce(self, host):
         command = ['virtualenv']
