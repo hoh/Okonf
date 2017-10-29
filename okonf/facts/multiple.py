@@ -39,9 +39,9 @@ class Collection(Fact):
         else:
             raise TypeError("Unsupported type: %s", type(other))
 
-    def __str__(self):
-        module_names = [str(module_) for module_ in self.facts]
-        return "\n - ".join([self.__class__.__name__] + module_names)
+    @property
+    def description(self):
+        return "with {} facts".format(str(len(self.facts)))
 
 
 class Sequence(Collection):
