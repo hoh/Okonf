@@ -11,7 +11,8 @@ def run(task, debug=False):
     return result
 
 
-async def get_local_file_hash(file_path):
+async def get_local_file_hash(file_path: str) -> bytes:
+    """Get the sha256 hash of a file on the local filesyste."""
     if not isfile(file_path):
         raise FileNotFoundError("No such file or directory: '{}'"
                                 .format(file_path))
