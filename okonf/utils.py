@@ -2,7 +2,7 @@ import sys
 from os.path import isfile
 import logging
 import asyncio
-import subprocess
+from asyncio.subprocess import create_subprocess_exec
 
 
 def run(task, debug=False):
@@ -11,11 +11,15 @@ def run(task, debug=False):
     return result
 
 
-def get_local_file_hash(file_path):
+async def get_local_file_hash(file_path):
     if not isfile(file_path):
         raise FileNotFoundError("No such file or directory: '{}'"
                                 .format(file_path))
-    local_hash = subprocess.check_output(['sha256sum', file_path])
+
+    subprocess = await create_subprocess_exec('sha256sum', file_path,
+                                              stdout=asyncio.subprocess.PIPE)
+
+    local_hash = await subprocess.stdout.read()
     return local_hash.split(b' ', 1)[0]
 
 

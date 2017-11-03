@@ -73,7 +73,7 @@ class FileCopy(Fact):
         self.remote_hash = remote_hash
 
     async def enquire(self, host):
-        local_hash = get_local_file_hash(self.local_path)
+        local_hash = await get_local_file_hash(self.local_path)
         if self.remote_hash:
             return local_hash == self.remote_hash
         else:
