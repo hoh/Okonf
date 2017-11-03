@@ -27,7 +27,7 @@ class AptPresent(Fact):
     async def enquire(self, host):
         status = await host.run("dpkg -l {}".format(self.name), check=False)
         for line in status.split('\n'):
-            if re.match(r"ii\s+{}\s+".format(self.name), line):
+            if re.match(r"ii\s+{}(\:amd64)?\s+".format(self.name), line):
                 return True
         return False
 
