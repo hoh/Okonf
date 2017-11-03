@@ -48,6 +48,19 @@ class AptUpdated(Fact):
     def __init__(self, names=tuple()):
         self.names = names
 
+    async def enquire(self, host):
+        return False
+
+    async def enforce(self, host):
+        await host.run("sudo apt-get update")
+        return True
+
+
+class AptUpgraded(Fact):
+
+    def __init__(self, names=tuple()):
+        self.names = names
+
     async def info(self, host):
         names_str = ' '.join(self.names)
         status = await host.run("apt list --upgradeable {}".format(names_str))
@@ -65,5 +78,5 @@ class AptUpdated(Fact):
         return len(upgradeable) == 0
 
     async def enforce(self, host):
-        await host.run("sudo apt-get update")
+        await host.run("sudo apt-get upgrade")
         return True
