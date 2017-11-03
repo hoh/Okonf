@@ -35,3 +35,15 @@ def setup_logger(level=None):
         root_logger.setLevel(logging.INFO)
     else:
         root_logger.setLevel(logging.WARNING)
+
+
+def format_collection_result(result, level: int=0):
+    """Format the result of running check or apply on a collection of facts,
+    recursively."""
+    output = "{}- {}\n".format('  '*level, result)
+    try:
+        for r in result.result:
+            output += format_collection_result(r, level=level+1)
+    except TypeError:
+        pass
+    return output
