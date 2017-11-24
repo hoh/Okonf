@@ -15,7 +15,13 @@ Okonf also focuses on excellent performance by running asynchronously.
 
 Inspired by: [pyinfra](), [Ansible](), [SaltStack]().
 
-## Usage
+## Status
+
+Okonf is still in early development, and it's API is subject to changes. 
+
+Suggestions and contributions are welcome.
+
+## Usage as a library
 
 ```python
 from okonf.connectors import LocalHost
@@ -50,6 +56,39 @@ loop.run_until_complete(
     Collection.apply(host),
 )
 ```
+
+## Usage as a tool
+
+Declare your infrastructure in a Python file (here named `infra.py`) with your two dictionnaries named `hosts` and `configs`.
+For example, we like to have `vim`, `tree` and `htop` installed on our systems:
+
+```python
+from okonf.connectors import LocalHost
+from okonf.facts.apt import AptPresent
+
+hosts = {
+    'laptop': LocalHost(),
+}
+
+configs = {
+    'laptop': Sequence(
+        AptPresent(pkg) for pkg in
+        ['vim', 'htop', 'tree'']
+    ),
+}
+```
+
+If you installed Okonf via `pip`, you should then be able to check the current state with:
+```bash
+okonf check infra.py laptop
+```
+
+And to apply your configuration using:
+```bash
+okonf apply infra.py laptop
+```
+
+Now that you got the basics, you can replace the connector with an `SSHHost`, and look at other facts you want to use.
 
 ## Collections
 
