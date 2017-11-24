@@ -108,3 +108,7 @@ class FilePresent(Fact):
         await host.run("touch {}".format(self.remote_path))
         return True
 ```
+
+## License
+
+Okonf is licensed under the Apache License 2.0.
