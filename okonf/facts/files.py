@@ -226,14 +226,15 @@ class DirectoryCopy(Fact):
         return Collection((
             # Both copy/creation and removal can be concurrent:
             Sequence((
-                # Must create directories before files
-                Collection(dirs_to_create), Collection(files_to_copy),
-            )),
+                Collection(dirs_to_create, title="Directories to be present"),
+                Collection(files_to_copy, title="Files to be present"),
+            ), title="Directories and files to be present"),
             Sequence((
                 # Must remove files before directories
-                Collection(files_to_remove), Collection(dirs_to_remove),
-            )),
-        ))
+                Collection(files_to_remove, title="Files to be absent"),
+                Collection(dirs_to_remove, title="Directories to be absent"),
+            ), title="Directories and files to be absent") if self.delete else Collection(()),
+        ), title=f"Directory copy from {self.local_path} to {self.remote_path}")
 
     async def check(self, host):
         facts = await self.subfacts(host)
