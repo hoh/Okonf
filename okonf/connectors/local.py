@@ -21,23 +21,24 @@ class LocalHost:
             cmd=command, stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE)
 
+        stdout, stderr = await process.communicate()
+
         logging.debug('RET %s', [process.returncode])
 
         if no_such_file and process.returncode not in (None, 0, '0'):
-            stderr = await process.stderr.read()
             if stderr.endswith(b'No such file or directory\n'):
                 raise NoSuchFileError(process.returncode,
-                                      stdout=await process.stdout.read(),
+                                      stdout=stdout,
                                       stderr=stderr)
 
         if check and process.returncode not in (None, 0, '0'):
             raise ShellError(process.returncode,
-                             stdout=await process.stdout.read(),
-                             stderr=await process.stderr.read())
+                             stdout=stdout,
+                             stderr=stderr)
 
-        result = await process.stdout.read()
+        result = stdout
         logging.debug("Result stdout = '%s'", result)
-        logging.debug("Result stderr = '%s'", await process.stderr.read())
+        logging.debug("Result stderr = '%s'", stderr)
         return result.decode()
 
     async def put(self, path, local_path):
