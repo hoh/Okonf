@@ -1,8 +1,8 @@
 import re
 from okonf.facts.abstract import Fact
 
-RE_UPGRADEABLE = '([^\/]+)\/([^\s]+)\s+([^\s]+)\s+(\w+)\s+' \
-                 '\[upgradable from:\s+([^\s]+)\]$'
+RE_UPGRADEABLE = r'([^\/]+)\/([^\s]+)\s+([^\s]+)\s+(\w+)\s+' \
+                 r'\[upgradable from:\s+([^\s]+)\]$'
 
 
 def parse_upgradeable(lines):
