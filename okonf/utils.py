@@ -1,4 +1,3 @@
-import sys
 from os.path import isfile
 import logging
 import asyncio
@@ -20,8 +19,11 @@ async def get_local_file_hash(file_path: str) -> bytes:
     subprocess = await create_subprocess_exec('sha256sum', file_path,
                                               stdout=asyncio.subprocess.PIPE)
 
-    local_hash = await subprocess.stdout.read()
-    return local_hash.split(b' ', 1)[0]
+    if subprocess.stdout:
+        local_hash = await subprocess.stdout.read()
+        return local_hash.split(b' ', 1)[0]
+    else:
+        return b''
 
 
 def setup_logger(debug, info):
