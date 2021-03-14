@@ -158,7 +158,7 @@ class DirectoryCopy(Fact):
                 hash, path = line.split()
                 result[path] = hash
             return result
-        except NoSuchFileError as error:
+        except NoSuchFileError:
             return {}
 
     async def info_dirs_present(self, host):
@@ -167,7 +167,7 @@ class DirectoryCopy(Fact):
             output = await host.run(command, no_such_file=True)
             result = output.strip().split('\n')
             return result if result != [''] else []
-        except NoSuchFileError as error:
+        except NoSuchFileError:
             return []
 
     def _get_remote_path(self, local_path):
