@@ -13,6 +13,8 @@ async def test_AptPresent():
     assert not os.path.isfile('/usr/bin/tree')
     assert await AptPresent('tree').apply(host)
     assert os.path.isfile('/usr/bin/tree')
+    assert await AptAbsent('tree').apply(host)
+    assert not os.path.isfile('/usr/bin/tree')
 
 
 APT_UPGRADABLE = """
