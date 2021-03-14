@@ -18,7 +18,7 @@ def load_config(file_path: str) -> Tuple[Fact, dict]:
 
 def check(file_path: str, host: str,
           debug: bool=False, info: bool=False):
-    setup_logger()
+    setup_logger(debug, info)
 
     file_configs, file_hosts = load_config(file_path)
     target_host = file_hosts[host]
@@ -33,7 +33,7 @@ def check(file_path: str, host: str,
 
 def apply(file_path: str, host: str,
           debug: bool=False, info: bool=False):
-    setup_logger()
+    setup_logger(debug, info)
 
     file_configs, file_hosts = load_config(file_path)
     target_host = file_hosts[host]

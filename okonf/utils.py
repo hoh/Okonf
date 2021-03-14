@@ -24,17 +24,17 @@ async def get_local_file_hash(file_path: str) -> bytes:
     return local_hash.split(b' ', 1)[0]
 
 
-def setup_logger(level=None):
+def setup_logger(debug, info):
     root_logger = logging.getLogger('')
 
-    if level:
-        root_logger.setLevel(level)
-    elif '--debug' in sys.argv:
-        root_logger.setLevel(logging.DEBUG)
-    elif '--info' in sys.argv:
-        root_logger.setLevel(logging.INFO)
+    if debug:
+        level = logging.DEBUG
+    elif info:
+        level = logging.INFO
     else:
-        root_logger.setLevel(logging.WARNING)
+        level = logging.WARNING
+
+    root_logger.setLevel(level)
 
 
 def format_collection_result(result, level: int=0):
