@@ -43,6 +43,24 @@ class AptPresent(Fact):
         return str(self.name)
 
 
+class AptAbsent(AptPresent):
+
+    def __init__(self, name, purge=False, sudo=True):
+        self.purge = purge
+        super(AptAbsent, self).__init__(name=name, sudo=sudo)
+
+    async def enquire(self, host):
+        return not await super().enquire(host)
+
+    async def enforce(self, host):
+        purge = '--purge' if self.purge else ''
+        if self.sudo:
+            await host.run("apt-get remove {} -y {}".format(purge, self.name))
+        else:
+            await host.run("sudo apt-get remove {} -y {}".format(purge, self.name))
+        return True
+
+
 class AptUpdated(Fact):
 
     def __init__(self, names=tuple()):
