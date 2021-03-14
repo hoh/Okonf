@@ -156,7 +156,7 @@ class DirectoryCopy(Fact):
                 if not line:
                     continue
                 hash, path = line.split()
-                result[path] = hash
+                result[path] = hash.encode()
             return result
         except NoSuchFileError:
             return {}
