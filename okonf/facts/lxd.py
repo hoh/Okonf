@@ -1,6 +1,6 @@
 import json
 
-from okonf.facts.abstract import Fact
+from .abstract import Fact
 
 
 class Container(Fact):

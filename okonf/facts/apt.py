@@ -1,8 +1,8 @@
 import re
 from typing import Iterable, Dict, Tuple, Union, Optional
 
-from okonf.connectors import Host
-from okonf.facts.abstract import Fact
+from .abstract import Fact
+from ..connectors.abstract import Host
 
 RE_UPGRADEABLE = r'([^\/]+)\/([^\s]+)\s+([^\s]+)\s+(\w+)\s+' \
                  r'\[upgradable from:\s+([^\s]+)\]$'

@@ -3,10 +3,10 @@ from hashlib import sha256
 from os.path import join
 from tempfile import NamedTemporaryFile
 
-from okonf import Collection, Sequence
-from okonf.connectors.exceptions import NoSuchFileError
-from okonf.facts.abstract import Fact, FactCheck, FactResult
-from okonf.utils import get_local_file_hash
+from .abstract import Fact, FactCheck, FactResult
+from .multiple import Collection, Sequence
+from ..utils import get_local_file_hash
+from ..connectors.exceptions import NoSuchFileError
 
 
 class FilePresent(Fact):

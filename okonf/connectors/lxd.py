@@ -3,8 +3,8 @@ import logging
 
 from pylxd import Client
 
-from okonf.connectors.abstract import Host
-from okonf.connectors.exceptions import NoSuchFileError, ShellError
+from .abstract import Host
+from .exceptions import NoSuchFileError, ShellError
 
 
 class LXDHost(Host):

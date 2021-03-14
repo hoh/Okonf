@@ -1,8 +1,8 @@
 import asyncio
 from typing import Union, Any
 
-from okonf.connectors import Host
-from okonf.facts.abstract import Fact, FactCheck, FactResult
+from .abstract import Fact, FactCheck, FactResult
+from ..connectors.abstract import Host
 
 
 class Collection(Fact):

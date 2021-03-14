@@ -1,5 +1,5 @@
-from okonf.connectors.exceptions import ShellError
-from okonf.facts.abstract import Fact
+from .abstract import Fact
+from ..connectors.exceptions import ShellError
 
 
 class FlatpakPresent(Fact):

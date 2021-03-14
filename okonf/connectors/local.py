@@ -5,8 +5,8 @@ from shutil import copyfile
 
 import colorama
 
-from okonf.connectors import Host
-from okonf.connectors.exceptions import NoSuchFileError, ShellError
+from .abstract import Host
+from .exceptions import NoSuchFileError, ShellError
 
 
 class LocalHost(Host):

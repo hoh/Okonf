@@ -1,8 +1,8 @@
 from typing import Iterable
 
-from okonf.connectors import Host
-from okonf.facts.abstract import Fact
-from okonf.facts.files import FilePresent
+from .abstract import Fact
+from .files import FilePresent
+from ..connectors.abstract import Host
 
 
 class Virtualenv(Fact):

@@ -1,11 +1,11 @@
 import asyncio
 from typing import Tuple, Dict, NewType
 
-from okonf.connectors import Host
 from typer import Typer
 
-from okonf.facts.abstract import Fact
-from okonf.utils import run, format_collection_result, setup_logger
+from .connectors.abstract import Host
+from .facts.abstract import Fact
+from .utils import run, format_collection_result, setup_logger
 
 app = Typer()
 

@@ -3,8 +3,8 @@ from typing import Dict
 
 import asyncssh
 
-from okonf.connectors import Host
-from okonf.connectors.exceptions import NoSuchFileError, ShellError
+from .abstract import Host
+from .exceptions import NoSuchFileError, ShellError
 
 
 class SSHHost(Host):

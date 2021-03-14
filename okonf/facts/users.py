@@ -1,7 +1,7 @@
 from typing import List
 
-from okonf.connectors import Host
-from okonf.facts.abstract import Fact
+from .abstract import Fact
+from ..connectors.abstract import Host
 
 
 class GroupMember(Fact):

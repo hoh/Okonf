@@ -1,7 +1,7 @@
-from os.path import isfile
-import logging
 import asyncio
+import logging
 from asyncio.subprocess import create_subprocess_exec
+from os.path import isfile
 
 
 def run(task, debug=False):

@@ -1,8 +1,8 @@
 import logging
 
-from okonf.connectors import Host
-from okonf.facts.abstract import Fact
-from okonf.facts.files import DirectoryPresent
+from .abstract import Fact
+from .files import DirectoryPresent
+from ..connectors.abstract import Host
 
 
 class GitClone(Fact):

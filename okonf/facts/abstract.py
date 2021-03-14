@@ -6,7 +6,7 @@ from typing import List, Union, Tuple
 import colorama
 from colorama import Fore
 
-from okonf.connectors import Host
+from ..connectors.abstract import Host
 
 
 def all_true(iterable) -> bool:
