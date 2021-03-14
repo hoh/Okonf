@@ -13,10 +13,10 @@ Hosts = NewType('Hosts', Dict[str, Host])
 
 
 def load_config(file_path: str) -> Tuple[Fact, Hosts]:
-    locals: Dict = {}
-    exec(open(file_path).read(), locals)
-    file_hosts: Hosts = locals['hosts']
-    file_configs = locals['configs']
+    locals_: Dict = {}
+    exec(open(file_path).read(), locals_)
+    file_hosts: Hosts = locals_['hosts']
+    file_configs = locals_['configs']
     return file_configs, file_hosts
 
 
