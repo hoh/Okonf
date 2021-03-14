@@ -55,7 +55,7 @@ class FileHash(Fact):
         return remote_hash == self.hash
 
     async def enforce(self, host):
-        raise NotImplemented
+        raise NotImplementedError()
 
 
 class FileCopy(Fact):
