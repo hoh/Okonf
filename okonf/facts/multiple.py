@@ -8,8 +8,9 @@ class Collection(Fact):
     Unordered collection of facts. All will be applied together
     asynchronously.
     """
-    def __init__(self, facts):
+    def __init__(self, facts, title=None):
         self.facts = list(facts)
+        self.title = title
 
     async def check(self, host):
         """
@@ -41,7 +42,10 @@ class Collection(Fact):
 
     @property
     def description(self):
-        return "with {} facts".format(str(len(self.facts)))
+        if self.title:
+            return "{} with {} facts".format(self.title, str(len(self.facts)))
+        else:
+            return "with {} facts".format(str(len(self.facts)))
 
 
 class Sequence(Collection):
