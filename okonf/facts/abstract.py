@@ -1,6 +1,6 @@
 import logging
 
-from collections import Iterable
+from collections.abc import Iterable
 from typing import List, Union
 
 import colorama
@@ -76,7 +76,7 @@ class FactResult:
     def __repr__(self):
         if bool(self):
             return "{}{} {}{}".format(
-                Fore.GREEN, 'Changed', Fore.WHITE, self.fact)
+                Fore.YELLOW, 'Changed', Fore.WHITE, self.fact)
         else:
             return "{}{} {}{}".format(
                 Fore.MAGENTA, 'Unchanged', Fore.WHITE, self.fact)
