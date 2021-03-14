@@ -185,7 +185,7 @@ class DirectoryCopy(Fact):
         we return a structure with these facts that can be used for both
         check and apply instead of running code."""
 
-        dirs_to_create = []
+        dirs_to_create = [DirectoryPresent(self._get_remote_path(self.local_path))]
         files_to_copy = []
         dirs_to_remove = []
         files_to_remove = []
