@@ -1,9 +1,9 @@
-import logging
 import asyncio
-
-import colorama
+import logging
 from os.path import expanduser
 from shutil import copyfile
+
+import colorama
 
 from okonf.connectors import Host
 from okonf.connectors.exceptions import NoSuchFileError, ShellError
@@ -14,7 +14,7 @@ class LocalHost(Host):
     def __init__(self):
         pass
 
-    async def run(self, command, check=True, no_such_file=False):
+    async def run(self, command: str, check: bool = True, no_such_file: bool = False) -> str:
         logging.debug("run locally " + colorama.Fore.YELLOW + "$ %s", command)
         colorama.reinit()
 
@@ -22,6 +22,8 @@ class LocalHost(Host):
             cmd=command, stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE)
 
+        stdout: bytes
+        stderr: bytes
         stdout, stderr = await process.communicate()
 
         logging.debug('RET %s', [process.returncode])
@@ -42,6 +44,6 @@ class LocalHost(Host):
         logging.debug("Result stderr = '%s'", stderr)
         return result.decode()
 
-    async def put(self, path, local_path):
+    async def put(self, path, local_path) -> None:
         path = expanduser(path)
         copyfile(local_path, path)

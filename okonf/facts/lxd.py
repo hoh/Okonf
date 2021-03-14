@@ -5,7 +5,7 @@ from okonf.facts.abstract import Fact
 
 class Container(Fact):
 
-    def __init__(self, name: str, image: str='images:debian/stretch') -> None:
+    def __init__(self, name: str, image: str = 'images:debian/stretch'):
         self.name = name
         self.image = image
 

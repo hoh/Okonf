@@ -1,25 +1,26 @@
 import os
-from os.path import join
 from hashlib import sha256
+from os.path import join
 from tempfile import NamedTemporaryFile
 
 from okonf import Collection, Sequence
 from okonf.connectors.exceptions import NoSuchFileError
-from okonf.facts.abstract import Fact
+from okonf.facts.abstract import Fact, FactCheck, FactResult
 from okonf.utils import get_local_file_hash
 
 
 class FilePresent(Fact):
     """Ensure that a file is present"""
+    remote_path: str
 
     def __init__(self, remote_path: str) -> None:
         self.remote_path = remote_path
 
-    async def enquire(self, host):
+    async def enquire(self, host) -> bool:
         command = "ls -d {}".format(self.remote_path)
         return await host.run(command, check=False) != ''
 
-    async def enforce(self, host):
+    async def enforce(self, host) -> bool:
         await host.run("touch {}".format(self.remote_path))
         return True
 
@@ -27,10 +28,10 @@ class FilePresent(Fact):
 class FileAbsent(FilePresent):
     """Ensure that a file is absent"""
 
-    async def enquire(self, host):
+    async def enquire(self, host) -> bool:
         return not await FilePresent.enquire(self, host)
 
-    async def enforce(self, host):
+    async def enforce(self, host) -> bool:
         await host.run("rm {}".format(self.remote_path))
         return True
 
@@ -46,15 +47,15 @@ class FileHash(Fact):
         try:
             output = await host.run("sha256sum {}".format(self.remote_path),
                                     no_such_file=True)
-        except (NoSuchFileError):
+        except NoSuchFileError:
             return False
         return output.split(' ', 1)[0].encode()
 
-    async def enquire(self, host):
+    async def enquire(self, host) -> bool:
         remote_hash = await self.get_hash(host)
         return remote_hash == self.hash
 
-    async def enforce(self, host):
+    async def enforce(self, host) -> bool:
         raise NotImplementedError()
 
 
@@ -72,14 +73,14 @@ class FileCopy(Fact):
         self.local_path = local_path
         self.remote_hash = remote_hash
 
-    async def enquire(self, host):
+    async def enquire(self, host) -> bool:
         local_hash = await get_local_file_hash(self.local_path)
         if self.remote_hash:
             return local_hash == self.remote_hash
         else:
             return await FileHash(self.remote_path, local_hash).enquire(host)
 
-    async def enforce(self, host):
+    async def enforce(self, host) -> bool:
         await host.put(self.remote_path, self.local_path)
         return True
 
@@ -114,11 +115,11 @@ class DirectoryPresent(Fact):
     def __init__(self, remote_path: str) -> None:
         self.remote_path = remote_path
 
-    async def enquire(self, host):
+    async def enquire(self, host) -> bool:
         command = "ls -d {}".format(self.remote_path)
         return await host.run(command, check=False) != ''
 
-    async def enforce(self, host):
+    async def enforce(self, host) -> bool:
         await host.run("mkdir -p {}".format(self.remote_path))
         return True
 
@@ -130,10 +131,10 @@ class DirectoryPresent(Fact):
 class DirectoryAbsent(DirectoryPresent):
     """Ensure that a directory is absent"""
 
-    async def enquire(self, host):
+    async def enquire(self, host) -> bool:
         return not await DirectoryPresent.enquire(self, host)
 
-    async def enforce(self, host):
+    async def enforce(self, host) -> bool:
         await host.run("rmdir {}".format(self.remote_path))
         return True
 
@@ -142,7 +143,7 @@ class DirectoryCopy(Fact):
     """Ensure that a remote directory contains a copy of a local one"""
 
     def __init__(self, remote_path: str, local_path: str,
-                 delete: bool=False) -> None:
+                 delete: bool = False) -> None:
         self.remote_path = remote_path
         self.local_path = local_path
         self.delete = delete
@@ -236,10 +237,10 @@ class DirectoryCopy(Fact):
             ), title="Directories and files to be absent") if self.delete else Collection(()),
         ), title=f"Directory copy from {self.local_path} to {self.remote_path}")
 
-    async def check(self, host):
+    async def check(self, host) -> FactCheck:
         facts = await self.subfacts(host)
         return await facts.check(host)
 
-    async def apply(self, host):
+    async def apply(self, host) -> FactResult:
         facts = await self.subfacts(host)
         return await facts.apply(host)

@@ -1,5 +1,5 @@
-import logging
 import asyncio
+import logging
 
 from pylxd import Client
 
@@ -12,7 +12,7 @@ class LXDHost(Host):
         self._client = Client()
         self._container = self._client.containers.get(name)
 
-    async def run(self, command, check=True, no_such_file=False):
+    async def run(self, command: str, check: bool = True, no_such_file: bool = False):
         logging.info("run %s$ %s", self._container.name, command)
 
         command = command.split(' ')
@@ -30,7 +30,7 @@ class LXDHost(Host):
                                  stderr=result.stderr)
         return result.stdout
 
-    async def put(self, path, local_path):
+    async def put(self, path: str, local_path: str):
         if path.startswith('~/'):
             path = '/root/' + path[2:]
         content = open(local_path, 'rb')

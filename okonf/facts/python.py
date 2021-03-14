@@ -1,5 +1,6 @@
 from typing import Iterable
 
+from okonf.connectors import Host
 from okonf.facts.abstract import Fact
 from okonf.facts.files import FilePresent
 
@@ -7,18 +8,18 @@ from okonf.facts.files import FilePresent
 class Virtualenv(Fact):
     """Ensure that a virtual environment is present"""
 
-    def __init__(self, path: str, python: str='python3', site_packages=False,
+    def __init__(self, path: str, python: str = 'python3', site_packages=False,
                  always_copy=False) -> None:
         self.path = path
         self.python = python
         self.site_packages = site_packages
         self.always_copy = always_copy
 
-    async def check(self, host):
+    async def check(self, host: Host) -> bool:
         path = "{}/bin/python".format(self.path)
         return await FilePresent(path).check(host)
 
-    async def enforce(self, host):
+    async def enforce(self, host: Host) -> bool:
         command = ['virtualenv']
 
         if self.python:
@@ -37,14 +38,14 @@ class Virtualenv(Fact):
         return True
 
     @property
-    def description(self):
+    def description(self) -> str:
         return self.path
 
 
 class PipInstalled(Fact):
 
-    def __init__(self, packages: Iterable[str], virtualenv: str=None,
-                 latest: bool=False) -> None:
+    def __init__(self, packages: Iterable[str], virtualenv: str = None,
+                 latest: bool = False) -> None:
         self.packages = packages
         self.virtualenv = virtualenv
         self.latest = latest
@@ -66,7 +67,7 @@ class PipInstalled(Fact):
             for key, value in lines
         }
 
-    async def enquire(self, host):
+    async def enquire(self, host: Host) -> bool:
         installed = await self.info(host)
         for pkg in self.packages:
             if '==' in pkg:
@@ -80,7 +81,7 @@ class PipInstalled(Fact):
                     return False
         return True
 
-    async def enforce(self, host):
+    async def enforce(self, host: Host) -> bool:
         if self.virtualenv:
             pip = "{}/bin/pip".format(self.virtualenv)
         else:
@@ -91,5 +92,5 @@ class PipInstalled(Fact):
         return True
 
     @property
-    def description(self):
+    def description(self) -> str:
         return str("{} in {}".format(','.join(self.packages), self.virtualenv))

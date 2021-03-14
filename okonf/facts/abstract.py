@@ -1,11 +1,12 @@
 import logging
-
+from abc import abstractmethod
 from collections.abc import Iterable
-from typing import List, Union
+from typing import List, Union, Tuple
 
 import colorama
-from abc import abstractmethod
 from colorama import Fore
+
+from okonf.connectors import Host
 
 
 def all_true(iterable) -> bool:
@@ -34,7 +35,7 @@ def any_true(iterable) -> bool:
 
 class FactCheck:
 
-    def __init__(self, fact: 'Fact', result: Union[bool, List]) -> None:
+    def __init__(self, fact: 'Fact', result: Union[bool, Tuple]) -> None:
         assert isinstance(result, bool) or isinstance(result, list)
         self.fact = fact
         self.result = result
@@ -45,10 +46,10 @@ class FactCheck:
         else:
             return all_true(self.result)
 
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         return self.result == other
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         if bool(self):
             return "{}{} {}{}".format(
                 Fore.GREEN, 'Present', Fore.WHITE, self.fact)
@@ -59,21 +60,21 @@ class FactCheck:
 
 class FactResult:
 
-    def __init__(self, fact: 'Fact', result: Union[bool, List]) -> None:
+    def __init__(self, fact: 'Fact', result: Union[bool, Tuple, List]) -> None:
         assert isinstance(result, bool) or isinstance(result, list)
         self.fact = fact
         self.result = result
 
-    def __bool__(self):
+    def __bool__(self) -> bool:
         if isinstance(self.result, bool):
             return self.result
         else:
             return any_true(self.result)
 
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         return self.result == other
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         if bool(self):
             return "{}{} {}{}".format(
                 Fore.YELLOW, 'Changed', Fore.WHITE, self.fact)
@@ -84,22 +85,22 @@ class FactResult:
 
 class Fact:
     @abstractmethod
-    async def enquire(self, host) -> bool:
-        "Run code to inspect the state of the host, return boolean status"
+    async def enquire(self, host: Host) -> bool:
+        """Run code to inspect the state of the host, return boolean status"""
         pass
 
     @abstractmethod
-    async def enforce(self, host) -> bool:
-        "Apply the fact assuming it is not in place yet."
+    async def enforce(self, host: Host) -> bool:
+        """Apply the fact assuming it is not in place yet."""
         pass
 
-    async def check(self, host) -> FactCheck:
+    async def check(self, host: Host) -> FactCheck:
         result = FactCheck(self, await self.enquire(host))
         logging.info(str(result))
         return result
 
-    async def apply(self, host) -> FactResult:
-        "Apply the fact if it is not in place yet, returns higher level result"
+    async def apply(self, host: Host) -> FactResult:
+        """Apply the fact if it is not in place yet, returns higher level result"""
         if not await self.check(host):
             result = FactResult(self, await self.enforce(host))
         else:
@@ -108,15 +109,15 @@ class Fact:
         return result
 
     @property
-    def description(self):
+    def description(self) -> str:
         return str(self.__dict__)
 
-    def __str__(self):
+    def __str__(self) -> str:
         arguments = (colorama.Fore.CYAN +
                      str(self.description) +
                      colorama.Style.RESET_ALL)
         return ' '.join((self.__class__.__name__, arguments))
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "<{}[{}]>".format(self.__class__.__name__,
                                  self.description)

@@ -22,7 +22,7 @@ def load_config(file_path: str) -> Tuple[Fact, Hosts]:
 
 @app.command()
 def check(file_path: str, host: str,
-          debug: bool=False, info: bool=False):
+          debug: bool = False, info: bool = False):
     setup_logger(debug, info)
 
     file_configs, file_hosts = load_config(file_path)
@@ -40,7 +40,7 @@ def check(file_path: str, host: str,
 
 @app.command()
 def apply(file_path: str, host: str,
-          debug: bool=False, info: bool=False):
+          debug: bool = False, info: bool = False):
     setup_logger(debug, info)
 
     file_configs, file_hosts = load_config(file_path)
@@ -57,4 +57,3 @@ def apply(file_path: str, host: str,
 
 if __name__ == '__main__':
     app()
-

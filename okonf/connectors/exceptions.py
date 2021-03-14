@@ -1,11 +1,11 @@
+from dataclasses import dataclass
 
 
+@dataclass
 class ShellError(Exception):
-
-    def __init__(self, exit_code, stdout=None, stderr=None):
-        self.exit_code = exit_code
-        self.stdout = stdout
-        self.stderr = stderr
+    exit_code: int
+    stdout: bytes
+    stderr: bytes
 
     def __str__(self):
         return "ShellError [{}] '{}' '{}'".format(self.exit_code,

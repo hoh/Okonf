@@ -1,4 +1,6 @@
 import logging
+from typing import Dict
+
 import asyncssh
 
 from okonf.connectors import Host
@@ -6,11 +8,12 @@ from okonf.connectors.exceptions import NoSuchFileError, ShellError
 
 
 class SSHHost(Host):
+    ssh_settings: Dict
 
     def __init__(self, **kwargs):
         self.ssh_settings = kwargs
 
-    async def run(self, command, check=True, no_such_file=False):
+    async def run(self, command: str, check=True, no_such_file=False) -> str:
         host, username = self.ssh_settings['host'], \
                          self.ssh_settings['username']
         logging.info("run %s@%s$ %s", username, host, command)
@@ -32,10 +35,10 @@ class SSHHost(Host):
             logging.debug("Result stdout = '%s'", result.stdout)
             return result.stdout
 
-    async def put(self, path, local_path):
+    async def put(self, path, local_path) -> None:
         host = self.ssh_settings['host']
         if path.startswith('~/'):
-            username = self.ssh_settings['username']
+            username: str = self.ssh_settings['username']
             if username == 'root':
                 path = "/root/{}".format(path[2:])
             else:
