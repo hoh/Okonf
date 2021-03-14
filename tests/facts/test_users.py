@@ -5,7 +5,7 @@ from okonf.facts.users import GroupMember
 
 
 @pytest.mark.asyncio
-async def test_Virtualenv():
+async def test_GroupMember():
     host = LocalHost()
     await host.run("useradd bob")
     await host.run("groupadd coolguys")
