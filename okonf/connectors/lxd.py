@@ -3,10 +3,11 @@ import asyncio
 
 from pylxd import Client
 
+from okonf.connectors.abstract import Host
 from okonf.connectors.exceptions import NoSuchFileError, ShellError
 
 
-class LXDHost:
+class LXDHost(Host):
     def __init__(self, name):
         self._client = Client()
         self._container = self._client.containers.get(name)

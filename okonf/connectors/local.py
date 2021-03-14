@@ -5,10 +5,11 @@ import colorama
 from os.path import expanduser
 from shutil import copyfile
 
+from okonf.connectors import Host
 from okonf.connectors.exceptions import NoSuchFileError, ShellError
 
 
-class LocalHost:
+class LocalHost(Host):
 
     def __init__(self):
         pass

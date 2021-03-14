@@ -1,10 +1,11 @@
 import logging
 import asyncssh
 
+from okonf.connectors import Host
 from okonf.connectors.exceptions import NoSuchFileError, ShellError
 
 
-class SSHHost:
+class SSHHost(Host):
 
     def __init__(self, **kwargs):
         self.ssh_settings = kwargs
