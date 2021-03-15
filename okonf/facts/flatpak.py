@@ -1,4 +1,5 @@
 from .abstract import Fact
+from ..connectors.abstract import Host
 from ..connectors.exceptions import ShellError
 
 
@@ -8,14 +9,14 @@ class FlatpakPresent(Fact):
         self.name = name
         self.sudo = sudo
 
-    async def enquire(self, host):
+    async def enquire(self, host: Host):
         try:
             await host.run("flatpak info {}".format(self.name), check=True)
             return True
         except ShellError:
             return False
 
-    async def enforce(self, host):
+    async def enforce(self, host: Host):
         if self.sudo:
             await host.run("sudo flatpak install -y {}".format(self.name))
         else:
@@ -33,10 +34,10 @@ class FlatpakUpdated(Fact):
         self.names = names
         self.sudo = sudo
 
-    async def enquire(self, host):
+    async def enquire(self, host: Host):
         return False
 
-    async def enforce(self, host):
+    async def enforce(self, host: Host):
         if self.sudo:
             await host.run("sudo flatpak update")
         else:

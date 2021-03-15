@@ -5,6 +5,7 @@ from tempfile import NamedTemporaryFile
 
 from .abstract import Fact, FactCheck, FactResult
 from .multiple import Collection, Sequence
+from ..connectors.abstract import Host
 from ..utils import get_local_file_hash
 from ..connectors.exceptions import NoSuchFileError
 
@@ -16,11 +17,11 @@ class FilePresent(Fact):
     def __init__(self, remote_path: str) -> None:
         self.remote_path = remote_path
 
-    async def enquire(self, host) -> bool:
+    async def enquire(self, host: Host) -> bool:
         command = "ls -d {}".format(self.remote_path)
         return await host.run(command, check=False) != ''
 
-    async def enforce(self, host) -> bool:
+    async def enforce(self, host: Host) -> bool:
         await host.run("touch {}".format(self.remote_path))
         return True
 
@@ -28,22 +29,24 @@ class FilePresent(Fact):
 class FileAbsent(FilePresent):
     """Ensure that a file is absent"""
 
-    async def enquire(self, host) -> bool:
+    async def enquire(self, host: Host) -> bool:
         return not await FilePresent.enquire(self, host)
 
-    async def enforce(self, host) -> bool:
+    async def enforce(self, host: Host) -> bool:
         await host.run("rm {}".format(self.remote_path))
         return True
 
 
 class FileHash(Fact):
     """Ensure that a file has a given hash"""
+    remote_path: str
+    hash: bytes
 
-    def __init__(self, remote_path, hash):
+    def __init__(self, remote_path: str, hash: bytes):
         self.remote_path = remote_path
         self.hash = hash
 
-    async def get_hash(self, host):
+    async def get_hash(self, host: Host):
         try:
             output = await host.run("sha256sum {}".format(self.remote_path),
                                     no_such_file=True)
@@ -51,11 +54,11 @@ class FileHash(Fact):
             return False
         return output.split(' ', 1)[0].encode()
 
-    async def enquire(self, host) -> bool:
+    async def enquire(self, host: Host) -> bool:
         remote_hash = await self.get_hash(host)
         return remote_hash == self.hash
 
-    async def enforce(self, host) -> bool:
+    async def enforce(self, host: Host) -> bool:
         raise NotImplementedError()
 
 
@@ -73,14 +76,14 @@ class FileCopy(Fact):
         self.local_path = local_path
         self.remote_hash = remote_hash
 
-    async def enquire(self, host) -> bool:
+    async def enquire(self, host: Host) -> bool:
         local_hash = await get_local_file_hash(self.local_path)
         if self.remote_hash:
             return local_hash == self.remote_hash
         else:
             return await FileHash(self.remote_path, local_hash).enquire(host)
 
-    async def enforce(self, host) -> bool:
+    async def enforce(self, host: Host) -> bool:
         await host.put(self.remote_path, self.local_path)
         return True
 
@@ -96,12 +99,12 @@ class FileContent(Fact):
         self.remote_path = remote_path
         self.content = content
 
-    async def check(self, host):
+    async def check(self, host: Host):
         content_hash = sha256(self.content).hexdigest().encode()
         return await FileHash(
             self.remote_path, content_hash).check(host)
 
-    async def enforce(self, host):
+    async def enforce(self, host: Host):
         with NamedTemporaryFile() as tmpfile:
             tmpfile.write(self.content)
             tmpfile.seek(0)
@@ -115,11 +118,11 @@ class DirectoryPresent(Fact):
     def __init__(self, remote_path: str) -> None:
         self.remote_path = remote_path
 
-    async def enquire(self, host) -> bool:
+    async def enquire(self, host: Host) -> bool:
         command = "ls -d {}".format(self.remote_path)
         return await host.run(command, check=False) != ''
 
-    async def enforce(self, host) -> bool:
+    async def enforce(self, host: Host) -> bool:
         await host.run("mkdir -p {}".format(self.remote_path))
         return True
 
@@ -134,7 +137,7 @@ class DirectoryAbsent(DirectoryPresent):
     async def enquire(self, host) -> bool:
         return not await DirectoryPresent.enquire(self, host)
 
-    async def enforce(self, host) -> bool:
+    async def enforce(self, host: Host) -> bool:
         await host.run("rmdir {}".format(self.remote_path))
         return True
 
@@ -148,7 +151,7 @@ class DirectoryCopy(Fact):
         self.local_path = local_path
         self.delete = delete
 
-    async def info_files_hash(self, host) -> dict:
+    async def info_files_hash(self, host: Host) -> dict:
         try:
             command = "find %s -type f -exec sha256sum {} +" % self.remote_path
             output = await host.run(command, no_such_file=True)
@@ -162,7 +165,7 @@ class DirectoryCopy(Fact):
         except NoSuchFileError:
             return {}
 
-    async def info_dirs_present(self, host):
+    async def info_dirs_present(self, host: Host):
         try:
             command = "find {} -type d".format(self.remote_path)
             output = await host.run(command, no_such_file=True)
@@ -181,7 +184,7 @@ class DirectoryCopy(Fact):
         rel_path = remote_path[len(self.remote_path):].strip('/')
         return join(self.local_path, rel_path)
 
-    async def subfacts(self, host):
+    async def subfacts(self, host: Host):
         """This fact can be defined entirely using other facts, so
         we return a structure with these facts that can be used for both
         check and apply instead of running code."""
@@ -237,10 +240,10 @@ class DirectoryCopy(Fact):
             ), title="Directories and files to be absent") if self.delete else Collection(()),
         ), title=f"Directory copy from {self.local_path} to {self.remote_path}")
 
-    async def check(self, host) -> FactCheck:
+    async def check(self, host: Host) -> FactCheck:
         facts = await self.subfacts(host)
         return await facts.check(host)
 
-    async def apply(self, host) -> FactResult:
+    async def apply(self, host: Host) -> FactResult:
         facts = await self.subfacts(host)
         return await facts.apply(host)

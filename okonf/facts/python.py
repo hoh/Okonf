@@ -50,7 +50,7 @@ class PipInstalled(Fact):
         self.virtualenv = virtualenv
         self.latest = latest
 
-    async def info(self, host):
+    async def info(self, host: Host):
         if self.virtualenv:
             if not await Virtualenv(self.virtualenv).check(host):
                 return {}
