@@ -133,12 +133,25 @@ class DirectoryPresent(Fact):
 
 class DirectoryAbsent(DirectoryPresent):
     """Ensure that a directory is absent"""
+    recursive: bool
+    force: bool
 
-    async def enquire(self, host) -> bool:
+    def __init__(self, remote_path: str, recursive: bool = False,
+                 force: bool = False) -> None:
+        self.recursive = True
+        self.force = force
+        super().__init__(remote_path)
+
+    async def enquire(self, host: Host) -> bool:
         return not await DirectoryPresent.enquire(self, host)
 
     async def enforce(self, host: Host) -> bool:
-        await host.run("rmdir {}".format(self.remote_path))
+        if self.force:
+            recursive = "--recursive" if self.recursive else ""
+            force = "--force" if self.force else ""
+            await host.run(f"rm {recursive} {force} {self.remote_path}")
+        else:
+            await host.run("rmdir {}".format(self.remote_path))
         return True
 
 
