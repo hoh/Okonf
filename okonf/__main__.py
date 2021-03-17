@@ -12,7 +12,7 @@ app = Typer()
 Hosts = NewType('Hosts', Dict[str, Host])
 
 
-def load_config(file_path: str) -> Tuple[Fact, Hosts]:
+def load_config(file_path: str) -> Tuple[Dict[str, Fact], Hosts]:
     locals_: Dict = {}
     exec(open(file_path).read(), locals_)
     file_hosts: Hosts = locals_['hosts']

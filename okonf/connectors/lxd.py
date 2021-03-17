@@ -16,10 +16,10 @@ class LXDHost(Host):
     async def run(self, command: str, check: bool = True, no_such_file: bool = False):
         logging.info("run %s$ %s", self._container.name, command)
 
-        command = command.split(' ')
+        command_list = command.split(' ')
 
         result = await asyncio.get_event_loop().run_in_executor(
-            None, self._container.execute, command)
+            None, self._container.execute, command_list)
 
         if check and result.exit_code != 0:
             if no_such_file and result.stderr.endswith(

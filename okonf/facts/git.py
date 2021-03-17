@@ -16,7 +16,7 @@ class GitClone(Fact):
     async def get_branch(self, host: Host) -> str:
         if not await DirectoryPresent(self.directory).check(host):
             logging.debug("Git directory absent: {}".format(self.directory))
-            return False
+            return ''
         command = "git -C {} rev-parse --abbrev-ref HEAD" \
             .format(self.directory)
         branch_name = await host.run(command)

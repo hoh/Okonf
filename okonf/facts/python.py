@@ -1,6 +1,6 @@
-from typing import Iterable
+from typing import Iterable, List
 
-from .abstract import Fact
+from .abstract import Fact, FactCheck
 from .files import FilePresent
 from ..connectors.abstract import Host
 
@@ -15,24 +15,28 @@ class Virtualenv(Fact):
         self.site_packages = site_packages
         self.always_copy = always_copy
 
-    async def check(self, host: Host) -> bool:
+    async def check(self, host: Host) -> FactCheck:
         path = "{}/bin/python".format(self.path)
         return await FilePresent(path).check(host)
 
+    async def enquire(self, host: Host) -> bool:
+        # self.check is implemented instead
+        raise NotImplementedError()
+
     async def enforce(self, host: Host) -> bool:
-        command = ['virtualenv']
+        command_list: List[str] = ['virtualenv']
 
         if self.python:
-            command.append('-p {0}'.format(self.python))
+            command_list.append('-p {0}'.format(self.python))
 
         if self.site_packages:
-            command.append('--system-site-packages')
+            command_list.append('--system-site-packages')
 
         if self.always_copy:
-            command.append('--always-copy')
+            command_list.append('--always-copy')
 
-        command.append(self.path)
-        command = ' '.join(command)
+        command_list.append(self.path)
+        command: str = ' '.join(command_list)
 
         await host.run(command)
         return True

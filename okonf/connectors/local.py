@@ -25,16 +25,16 @@ class LocalHost(Host):
 
         logging.debug('RET %s', [process.returncode])
 
-        if no_such_file and process.returncode not in (None, 0, '0'):
-            if stderr.endswith(b'No such file or directory\n'):
-                raise NoSuchFileError(process.returncode,
-                                      stdout=stdout,
-                                      stderr=stderr)
-
-        if check and process.returncode not in (None, 0, '0'):
-            raise ShellError(process.returncode,
-                             stdout=stdout,
-                             stderr=stderr)
+        if process.returncode and process.returncode != '0':
+            if no_such_file:
+                if stderr.endswith(b'No such file or directory\n'):
+                    raise NoSuchFileError(process.returncode,
+                                          stdout=stdout,
+                                          stderr=stderr)
+            elif check:
+                raise ShellError(process.returncode,
+                                 stdout=stdout,
+                                 stderr=stderr)
 
         result = stdout
         logging.debug("Result stdout = '%s'", result)

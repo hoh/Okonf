@@ -13,7 +13,7 @@ class Collection(Fact):
     facts: Any
     title: str
 
-    def __init__(self, facts, title: str = None):
+    def __init__(self, facts, title: str = ''):
         self.facts = list(facts)
         self.title = title
 
@@ -36,6 +36,12 @@ class Collection(Fact):
               for step in self.facts)
         )
         return FactResult(fact=self, result=result)
+
+    async def enquire(self, host: Host) -> bool:
+        raise NotImplementedError()
+
+    async def enforce(self, host: Host) -> bool:
+        raise NotImplementedError()
 
     def __add__(self, other: Union['Sequence', 'Collection']) -> 'Collection':
         if isinstance(other, Sequence):

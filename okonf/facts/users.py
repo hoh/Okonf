@@ -50,9 +50,9 @@ class UserShell(Fact):
 
         user_shells = await host.run("cat /etc/passwd", check=False)
         for line in user_shells.split('\n'):
-            line = line.split(':')
-            username = line[0]
-            shell = line[-1]
+            fields = line.split(':')
+            username = fields[0]
+            shell = fields[-1]
             if username == self.username:
                 if shell == self.shell:
                     return True
