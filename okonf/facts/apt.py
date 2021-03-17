@@ -56,10 +56,10 @@ class AptAbsent(AptPresent):
         self.purge = purge
         super(AptAbsent, self).__init__(name=name, sudo=sudo)
 
-    async def enquire(self, host) -> bool:
+    async def enquire(self, host: Host) -> bool:
         return not await super().enquire(host)
 
-    async def enforce(self, host) -> bool:
+    async def enforce(self, host: Host) -> bool:
         purge = '--purge' if self.purge else ''
         async with host.lock('apt'):
             if self.sudo:
@@ -74,7 +74,7 @@ class AptUpdated(Fact):
     def __init__(self, names=tuple()):
         self.names = names
 
-    async def enquire(self, host) -> bool:
+    async def enquire(self, host: Host) -> bool:
         return False
 
     async def enforce(self, host: Host) -> bool:
@@ -101,7 +101,7 @@ class AptUpgraded(Fact):
             for name, values in parse_upgradeable(status.split('\n'))
         }
 
-    async def enquire(self, host) -> bool:
+    async def enquire(self, host: Host) -> bool:
         upgradeable = await self.info(host)
         return len(upgradeable) == 0
 
