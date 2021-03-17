@@ -18,19 +18,17 @@ async def test_GroupMember():
 @pytest.mark.asyncio
 async def test_UserShell():
     host = LocalHost()
-    await host.run("useradd testuser")
+    await host.run("useradd -s /bin/bash testuser2")
 
-    assert await UserShell('testuser', '/bin/bash').check()
-    assert not await UserShell('testuser', '/bin/sh').check()
+    assert await UserShell('testuser2', '/bin/bash').check(host)
+    assert not await UserShell('testuser2', '/bin/sh').check(host)
 
     # Change shell to sh
-    assert await UserShell('testuser', '/bin/sh').apply()
-    assert await UserShell('testuser', '/bin/bash').check()
-    assert not await UserShell('testuser', '/bin/sh').check()
+    assert await UserShell('testuser2', '/bin/sh').apply(host)
+    assert await UserShell('testuser2', '/bin/sh').check(host)
+    assert not await UserShell('testuser2', '/bin/bash').check(host)
 
     # Restore the expected shell
-    assert await UserShell('testuser', '/bin/bash').apply()
-    assert await UserShell('testuser', '/bin/bash').check()
-    assert not await UserShell('testuser', '/bin/sh').check()
-
-
+    assert await UserShell('testuser2', '/bin/bash').apply(host)
+    assert await UserShell('testuser2', '/bin/bash').check(host)
+    assert not await UserShell('testuser2', '/bin/sh').check(host)
