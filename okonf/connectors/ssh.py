@@ -12,6 +12,7 @@ class SSHHost(Host):
 
     def __init__(self, **kwargs):
         self.ssh_settings = kwargs
+        super(SSHHost, self).__init__()
 
     async def run(self, command: str, check=True, no_such_file=False) -> str:
         host, username = self.ssh_settings['host'], \

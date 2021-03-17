@@ -37,10 +37,11 @@ class AptPresent(Fact):
         return False
 
     async def enforce(self, host: Host) -> bool:
-        if self.sudo:
-            await host.run("sudo apt-get install -y {}".format(self.name))
-        else:
-            await host.run("apt-get install -y {}".format(self.name))
+        async with host.lock('apt'):
+            if self.sudo:
+                await host.run("sudo apt-get install -y {}".format(self.name))
+            else:
+                await host.run("apt-get install -y {}".format(self.name))
         return True
 
     @property
@@ -60,10 +61,11 @@ class AptAbsent(AptPresent):
 
     async def enforce(self, host) -> bool:
         purge = '--purge' if self.purge else ''
-        if self.sudo:
-            await host.run("apt-get remove {} -y {}".format(purge, self.name))
-        else:
-            await host.run("sudo apt-get remove {} -y {}".format(purge, self.name))
+        async with host.lock('apt'):
+            if self.sudo:
+                await host.run("apt-get remove {} -y {}".format(purge, self.name))
+            else:
+                await host.run("sudo apt-get remove {} -y {}".format(purge, self.name))
         return True
 
 
@@ -75,8 +77,9 @@ class AptUpdated(Fact):
     async def enquire(self, host) -> bool:
         return False
 
-    async def enforce(self, host) -> bool:
-        await host.run("sudo apt-get update")
+    async def enforce(self, host: Host) -> bool:
+        async with host.lock('apt-update'):
+            await host.run("sudo apt-get update")
         return True
 
 
@@ -102,6 +105,7 @@ class AptUpgraded(Fact):
         upgradeable = await self.info(host)
         return len(upgradeable) == 0
 
-    async def enforce(self, host) -> bool:
-        await host.run("sudo apt-get upgrade")
+    async def enforce(self, host: Host) -> bool:
+        async with host.lock('apt'):
+            await host.run("sudo apt-get upgrade")
         return True

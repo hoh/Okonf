@@ -11,6 +11,7 @@ class LXDHost(Host):
     def __init__(self, name):
         self._client = Client()
         self._container = self._client.containers.get(name)
+        super(LXDHost, self).__init__()
 
     async def run(self, command: str, check: bool = True, no_such_file: bool = False):
         logging.info("run %s$ %s", self._container.name, command)

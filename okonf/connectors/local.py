@@ -11,9 +11,6 @@ from .exceptions import NoSuchFileError, ShellError
 
 class LocalHost(Host):
 
-    def __init__(self):
-        pass
-
     async def run(self, command: str, check: bool = True, no_such_file: bool = False) -> str:
         logging.debug("run locally " + colorama.Fore.YELLOW + "$ %s", command)
         colorama.reinit()
