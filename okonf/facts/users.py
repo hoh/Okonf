@@ -61,7 +61,8 @@ class UserShell(Fact):
         raise ValueError(f"Unknown user: '{self.username}'")
 
     async def enforce(self, host: Host):
-        raise NotImplementedError()
+        await host.run(f"chsh --shell {self.shell} {self.username}")
+        return True
 
     @property
     def description(self) -> str:
