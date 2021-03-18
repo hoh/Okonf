@@ -5,7 +5,7 @@ from tempfile import NamedTemporaryFile
 
 from .abstract import Fact, FactCheck, FactResult
 from .multiple import Collection, Sequence
-from ..connectors.abstract import Host
+from ..connectors.abstract import Executor
 from ..utils import get_local_file_hash
 from ..connectors.exceptions import NoSuchFileError
 
@@ -17,11 +17,11 @@ class FilePresent(Fact):
     def __init__(self, remote_path: str) -> None:
         self.remote_path = remote_path
 
-    async def enquire(self, host: Host) -> bool:
+    async def enquire(self, host: Executor) -> bool:
         command = "ls -d {}".format(self.remote_path)
         return await host.run(command, check=False) != ''
 
-    async def enforce(self, host: Host) -> bool:
+    async def enforce(self, host: Executor) -> bool:
         await host.run("touch {}".format(self.remote_path))
         return True
 
@@ -29,10 +29,10 @@ class FilePresent(Fact):
 class FileAbsent(FilePresent):
     """Ensure that a file is absent"""
 
-    async def enquire(self, host: Host) -> bool:
+    async def enquire(self, host: Executor) -> bool:
         return not await FilePresent.enquire(self, host)
 
-    async def enforce(self, host: Host) -> bool:
+    async def enforce(self, host: Executor) -> bool:
         await host.run("rm {}".format(self.remote_path))
         return True
 
@@ -46,7 +46,7 @@ class FileHash(Fact):
         self.remote_path = remote_path
         self.hash = hash
 
-    async def get_hash(self, host: Host):
+    async def get_hash(self, host: Executor):
         try:
             output = await host.run("sha256sum {}".format(self.remote_path),
                                     no_such_file=True)
@@ -54,11 +54,11 @@ class FileHash(Fact):
             return False
         return output.split(' ', 1)[0].encode()
 
-    async def enquire(self, host: Host) -> bool:
+    async def enquire(self, host: Executor) -> bool:
         remote_hash = await self.get_hash(host)
         return remote_hash == self.hash
 
-    async def enforce(self, host: Host) -> bool:
+    async def enforce(self, host: Executor) -> bool:
         raise NotImplementedError()
 
 
@@ -76,14 +76,14 @@ class FileCopy(Fact):
         self.local_path = local_path
         self.remote_hash = remote_hash
 
-    async def enquire(self, host: Host) -> bool:
+    async def enquire(self, host: Executor) -> bool:
         local_hash = await get_local_file_hash(self.local_path)
         if self.remote_hash:
             return local_hash == self.remote_hash
         else:
             return await FileHash(self.remote_path, local_hash).enquire(host)
 
-    async def enforce(self, host: Host) -> bool:
+    async def enforce(self, host: Executor) -> bool:
         await host.put(self.remote_path, self.local_path)
         return True
 
@@ -99,12 +99,12 @@ class FileContent(Fact):
         self.remote_path = remote_path
         self.content = content
 
-    async def check(self, host: Host):
+    async def check(self, host: Executor):
         content_hash = sha256(self.content).hexdigest().encode()
         return await FileHash(
             self.remote_path, content_hash).check(host)
 
-    async def enforce(self, host: Host):
+    async def enforce(self, host: Executor):
         with NamedTemporaryFile() as tmpfile:
             tmpfile.write(self.content)
             tmpfile.seek(0)
@@ -118,11 +118,11 @@ class DirectoryPresent(Fact):
     def __init__(self, remote_path: str) -> None:
         self.remote_path = remote_path
 
-    async def enquire(self, host: Host) -> bool:
+    async def enquire(self, host: Executor) -> bool:
         command = "ls -d {}".format(self.remote_path)
         return await host.run(command, check=False) != ''
 
-    async def enforce(self, host: Host) -> bool:
+    async def enforce(self, host: Executor) -> bool:
         await host.run("mkdir -p {}".format(self.remote_path))
         return True
 
@@ -142,10 +142,10 @@ class DirectoryAbsent(DirectoryPresent):
         self.force = force
         super().__init__(remote_path)
 
-    async def enquire(self, host: Host) -> bool:
+    async def enquire(self, host: Executor) -> bool:
         return not await DirectoryPresent.enquire(self, host)
 
-    async def enforce(self, host: Host) -> bool:
+    async def enforce(self, host: Executor) -> bool:
         if self.force:
             recursive = "--recursive" if self.recursive else ""
             force = "--force" if self.force else ""
@@ -164,7 +164,7 @@ class DirectoryCopy(Fact):
         self.local_path = local_path
         self.delete = delete
 
-    async def info_files_hash(self, host: Host) -> dict:
+    async def info_files_hash(self, host: Executor) -> dict:
         try:
             command = "find %s -type f -exec sha256sum {} +" % self.remote_path
             output = await host.run(command, no_such_file=True)
@@ -178,7 +178,7 @@ class DirectoryCopy(Fact):
         except NoSuchFileError:
             return {}
 
-    async def info_dirs_present(self, host: Host):
+    async def info_dirs_present(self, host: Executor):
         try:
             command = "find {} -type d".format(self.remote_path)
             output = await host.run(command, no_such_file=True)
@@ -197,7 +197,7 @@ class DirectoryCopy(Fact):
         rel_path = remote_path[len(self.remote_path):].strip('/')
         return join(self.local_path, rel_path)
 
-    async def subfacts(self, host: Host):
+    async def subfacts(self, host: Executor):
         """This fact can be defined entirely using other facts, so
         we return a structure with these facts that can be used for both
         check and apply instead of running code."""
@@ -253,10 +253,10 @@ class DirectoryCopy(Fact):
             ), title="Directories and files to be absent") if self.delete else Collection(()),
         ), title=f"Directory copy from {self.local_path} to {self.remote_path}")
 
-    async def check(self, host: Host) -> FactCheck:
+    async def check(self, host: Executor) -> FactCheck:
         facts = await self.subfacts(host)
         return await facts.check(host)
 
-    async def apply(self, host: Host) -> FactResult:
+    async def apply(self, host: Executor) -> FactResult:
         facts = await self.subfacts(host)
         return await facts.apply(host)

@@ -1,15 +1,16 @@
 import asyncio
 import logging
+import os
 from os.path import expanduser
 from shutil import copyfile
 
 import colorama
 
-from .abstract import Host
+from .abstract import Executor
 from .exceptions import NoSuchFileError, ShellError
 
 
-class LocalHost(Host):
+class LocalExecutor(Executor):
 
     async def run(self, command: str, check: bool = True, no_such_file: bool = False) -> str:
         logging.debug("run locally " + colorama.Fore.YELLOW + "$ %s", command)
@@ -44,3 +45,12 @@ class LocalHost(Host):
     async def put(self, path, local_path) -> None:
         path = expanduser(path)
         copyfile(local_path, path)
+
+
+class LocalHost:
+
+    async def __aenter__(self):
+        return LocalExecutor(is_root=(os.getuid() == 0))
+
+    async def __aexit__(self, *args, **kwargs):
+        pass

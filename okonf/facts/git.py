@@ -2,7 +2,7 @@ import logging
 
 from .abstract import Fact
 from .files import DirectoryPresent
-from ..connectors.abstract import Host
+from ..connectors.abstract import Executor
 
 
 class GitClone(Fact):
@@ -13,7 +13,7 @@ class GitClone(Fact):
         self.directory = directory
         self.branch = branch
 
-    async def get_branch(self, host: Host) -> str:
+    async def get_branch(self, host: Executor) -> str:
         if not await DirectoryPresent(self.directory).check(host):
             logging.debug("Git directory absent: {}".format(self.directory))
             return ''
@@ -22,14 +22,14 @@ class GitClone(Fact):
         branch_name = await host.run(command)
         return branch_name.strip()
 
-    async def enquire(self, host: Host) -> bool:
+    async def enquire(self, host: Executor) -> bool:
         branch = await self.get_branch(host)
         if branch and not self.branch:
             return True
         else:
             return branch == self.branch
 
-    async def enforce(self, host: Host) -> bool:
+    async def enforce(self, host: Executor) -> bool:
         await host.run("git clone {} {}"
                        .format(self.repository, self.directory))
         return True

@@ -6,7 +6,7 @@ from typing import List, Union, Tuple
 import colorama
 from colorama import Fore
 
-from ..connectors.abstract import Host
+from ..connectors.abstract import Executor
 
 
 def all_true(iterable) -> bool:
@@ -85,21 +85,21 @@ class FactResult:
 
 class Fact:
     @abstractmethod
-    async def enquire(self, host: Host) -> bool:
+    async def enquire(self, host: Executor) -> bool:
         """Run code to inspect the state of the host, return boolean status"""
         pass
 
     @abstractmethod
-    async def enforce(self, host: Host) -> bool:
+    async def enforce(self, host: Executor) -> bool:
         """Apply the fact assuming it is not in place yet."""
         pass
 
-    async def check(self, host: Host) -> FactCheck:
+    async def check(self, host: Executor) -> FactCheck:
         result = FactCheck(self, await self.enquire(host))
         logging.info(str(result))
         return result
 
-    async def apply(self, host: Host) -> FactResult:
+    async def apply(self, host: Executor) -> FactResult:
         """Apply the fact if it is not in place yet, returns higher level result"""
         if not await self.check(host):
             result = FactResult(self, await self.enforce(host))

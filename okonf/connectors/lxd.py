@@ -1,25 +1,26 @@
 import asyncio
 import logging
+from typing import Any
 
 from pylxd import Client
 
-from .abstract import Host
+from .abstract import Executor
 from .exceptions import NoSuchFileError, ShellError
 
 
-class LXDHost(Host):
-    def __init__(self, name):
-        self._client = Client()
-        self._container = self._client.containers.get(name)
-        super(LXDHost, self).__init__()
+class LXDExecutor(Executor):
+
+    def __init__(self, connection, is_root: bool):
+        self.connection = connection
+        super().__init__(is_root=is_root)
 
     async def run(self, command: str, check: bool = True, no_such_file: bool = False):
-        logging.info("run %s$ %s", self._container.name, command)
+        logging.info("run %s$ %s", self.connection.name, command)
 
         command_list = command.split(' ')
 
         result = await asyncio.get_event_loop().run_in_executor(
-            None, self._container.execute, command_list)
+            None, self.connection.execute, command_list)
 
         if check and result.exit_code != 0:
             if no_such_file and result.stderr.endswith(
@@ -35,5 +36,24 @@ class LXDHost(Host):
         if path.startswith('~/'):
             path = '/root/' + path[2:]
         content = open(local_path, 'rb')
-        result = self._container.files.put(path, content)
+        result = self.connection.files.put(path, content)
         print('put result', result)
+
+
+class LXDHost:
+    container_name: str
+    connection: Any
+
+    def __init__(self, container_name: str):
+        self.container_name = container_name
+        super().__init__()
+
+
+    async def __aenter__(self):
+        self.connection = await Client()
+        client = Client()
+        self.connection = client.containers.get(self.container_name)
+        return LXDExecutor(connection=self.connection, is_root=True)
+
+    async def __aexit__(self, *args, **kwargs):
+        pass

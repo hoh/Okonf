@@ -4,12 +4,14 @@ from asyncio import Lock
 from typing import Dict
 
 
-class Host(ABC):
+class Executor(ABC):
 
     locks: Dict[str, Lock]
+    is_root: bool
 
-    def __init__(self):
+    def __init__(self, is_root: bool):
         self.locks = {}
+        self.is_root = is_root
 
     @abstractmethod
     async def run(self, command: str, check: bool = True, no_such_file: bool = False) -> str:

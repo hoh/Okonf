@@ -1,7 +1,7 @@
 from typing import List
 
 from .abstract import Fact
-from ..connectors.abstract import Host
+from ..connectors.abstract import Executor
 
 
 class GroupMember(Fact):
@@ -13,7 +13,7 @@ class GroupMember(Fact):
         self.username = username
         self.group = group
 
-    async def info(self, host: Host) -> List[str]:
+    async def info(self, host: Executor) -> List[str]:
         command = "groups {}".format(self.username)
         result = await host.run(command, check=False)
 
@@ -21,11 +21,11 @@ class GroupMember(Fact):
         assert result.startswith(prefix)
         return result[len(prefix):].split()
 
-    async def enquire(self, host: Host) -> bool:
+    async def enquire(self, host: Executor) -> bool:
         info = await self.info(host)
         return self.group in info
 
-    async def enforce(self, host: Host) -> bool:
+    async def enforce(self, host: Executor) -> bool:
         await host.run("sudo adduser {} {}".format(self.username, self.group))
         return True
 
@@ -43,7 +43,7 @@ class UserShell(Fact):
         self.username = username
         self.shell = shell
 
-    async def enquire(self, host: Host) -> bool:
+    async def enquire(self, host: Executor) -> bool:
         existing_shells = await host.run("cat /etc/shells", check=False)
         if self.shell not in existing_shells.split('\n'):
             raise ValueError(f"Unknown shell: '{self.shell}'")
@@ -60,7 +60,7 @@ class UserShell(Fact):
                     return False
         raise ValueError(f"Unknown user: '{self.username}'")
 
-    async def enforce(self, host: Host):
+    async def enforce(self, host: Executor):
         await host.run(f"chsh --shell {self.shell} {self.username}")
         return True
 

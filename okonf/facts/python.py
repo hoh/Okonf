@@ -2,7 +2,7 @@ from typing import Iterable, List
 
 from .abstract import Fact, FactCheck
 from .files import FilePresent
-from ..connectors.abstract import Host
+from ..connectors.abstract import Executor
 
 
 class Virtualenv(Fact):
@@ -15,15 +15,15 @@ class Virtualenv(Fact):
         self.site_packages = site_packages
         self.always_copy = always_copy
 
-    async def check(self, host: Host) -> FactCheck:
+    async def check(self, host: Executor) -> FactCheck:
         path = "{}/bin/python".format(self.path)
         return await FilePresent(path).check(host)
 
-    async def enquire(self, host: Host) -> bool:
+    async def enquire(self, host: Executor) -> bool:
         # self.check is implemented instead
         raise NotImplementedError()
 
-    async def enforce(self, host: Host) -> bool:
+    async def enforce(self, host: Executor) -> bool:
         command_list: List[str] = ['virtualenv']
 
         if self.python:
@@ -54,7 +54,7 @@ class PipInstalled(Fact):
         self.virtualenv = virtualenv
         self.latest = latest
 
-    async def info(self, host: Host):
+    async def info(self, host: Executor):
         if self.virtualenv:
             if not await Virtualenv(self.virtualenv).check(host):
                 return {}
@@ -71,7 +71,7 @@ class PipInstalled(Fact):
             for key, value in lines
         }
 
-    async def enquire(self, host: Host) -> bool:
+    async def enquire(self, host: Executor) -> bool:
         installed = await self.info(host)
         for pkg in self.packages:
             if '==' in pkg:
@@ -85,7 +85,7 @@ class PipInstalled(Fact):
                     return False
         return True
 
-    async def enforce(self, host: Host) -> bool:
+    async def enforce(self, host: Executor) -> bool:
         if self.virtualenv:
             pip = "{}/bin/pip".format(self.virtualenv)
         else:

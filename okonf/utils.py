@@ -1,10 +1,10 @@
-import asyncio
-import logging
-from asyncio.subprocess import create_subprocess_exec
 from os.path import isfile
+import logging
+import asyncio
+from asyncio.subprocess import create_subprocess_exec
 
 
-def run(task, debug=False):
+def run_coroutine(task, debug=False):
     loop = asyncio.get_event_loop()
     result = loop.run_until_complete(task)
     return result

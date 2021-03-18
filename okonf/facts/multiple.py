@@ -2,7 +2,7 @@ import asyncio
 from typing import Union, Any
 
 from .abstract import Fact, FactCheck, FactResult
-from ..connectors.abstract import Host
+from ..connectors.abstract import Executor
 
 
 class Collection(Fact):
@@ -17,7 +17,7 @@ class Collection(Fact):
         self.facts = list(facts)
         self.title = title
 
-    async def check(self, host: Host) -> FactCheck:
+    async def check(self, host: Executor) -> FactCheck:
         """
         Check the state of the fact; Checks are executed in parallel, not
         in order, as they do not have side-effects.
@@ -30,17 +30,17 @@ class Collection(Fact):
         )
         return FactCheck(fact=self, result=result)
 
-    async def apply(self, host: Host) -> FactResult:
+    async def apply(self, host: Executor) -> FactResult:
         result = await asyncio.gather(
             *(step.apply(host)
               for step in self.facts)
         )
         return FactResult(fact=self, result=result)
 
-    async def enquire(self, host: Host) -> bool:
+    async def enquire(self, host: Executor) -> bool:
         raise NotImplementedError()
 
-    async def enforce(self, host: Host) -> bool:
+    async def enforce(self, host: Executor) -> bool:
         raise NotImplementedError()
 
     def __add__(self, other: Union['Sequence', 'Collection']) -> 'Collection':
@@ -64,7 +64,7 @@ class Sequence(Collection):
     Ordered collection of facts. Each will be applied after the previous one.
     """
 
-    async def apply(self, host: Host):
+    async def apply(self, host: Executor):
         result = []
         for step in self.facts:
             result.append(await step.apply(host))

@@ -3,13 +3,13 @@ from typing import Tuple, Dict, NewType
 
 from typer import Typer
 
-from .connectors.abstract import Host
+from .connectors.abstract import Executor
 from .facts.abstract import Fact
-from .utils import run, format_collection_result, setup_logger
+from .utils import run_coroutine, format_collection_result, setup_logger
 
 app = Typer()
 
-Hosts = NewType('Hosts', Dict[str, Host])
+Hosts = NewType('Hosts', Dict[str, Executor])
 
 
 def load_config(file_path: str) -> Tuple[Dict[str, Fact], Hosts]:
@@ -20,6 +20,11 @@ def load_config(file_path: str) -> Tuple[Dict[str, Fact], Hosts]:
     return file_configs, file_hosts
 
 
+async def run_on_host(host, operation):
+    async with host as connection:
+        return await operation(connection)
+
+
 @app.command()
 def check(file_path: str, host: str,
           debug: bool = False, info: bool = False):
@@ -28,10 +33,10 @@ def check(file_path: str, host: str,
     file_configs, file_hosts = load_config(file_path)
     if host is None and len(file_hosts) == 1:
         host = list(file_hosts.keys())[0]
-    target_host: Host = file_hosts[host]
+    target_host: Executor = file_hosts[host]
     target_config = file_configs[host]
 
-    result = run(target_config.check(target_host))
+    result = run_coroutine(run_on_host(target_host, target_config.check))
     print(format_collection_result(result))
 
     asyncio.get_event_loop().close()
@@ -45,10 +50,10 @@ def apply(file_path: str, host: str,
 
     file_configs, file_hosts = load_config(file_path)
 
-    target_host: Host = file_hosts[host]
+    target_host: Executor = file_hosts[host]
     target_config = file_configs[host]
 
-    result = run(target_config.apply(target_host))
+    result = run_coroutine(run_on_host(target_host, target_config.apply))
     print(format_collection_result(result))
 
     asyncio.get_event_loop().close()

@@ -1,51 +1,65 @@
 import logging
-from typing import Dict
+from typing import Dict, Any
 
 import asyncssh
 
-from .abstract import Host
+from .abstract import Executor
 from .exceptions import NoSuchFileError, ShellError
 
 
-class SSHHost(Host):
-    ssh_settings: Dict
+class SSHExecutor(Executor):
+    connection: Any
+    username: str
 
-    def __init__(self, **kwargs):
-        self.ssh_settings = kwargs
-        super(SSHHost, self).__init__()
+    def __init__(self, connection, username: str, is_root: bool):
+        self.connection = connection
+        self.username = username
+        super().__init__(is_root=is_root)
 
     async def run(self, command: str, check=True, no_such_file=False) -> str:
-        host, username = self.ssh_settings['host'], \
-                         self.ssh_settings['username']
-        logging.info("run %s@%s$ %s", username, host, command)
+        logging.info("run {self.connection} {command}")
 
-        async with asyncssh.connect(**self.ssh_settings) as ssh:
-            result = await ssh.run(command, check=False)
+        result = await self.connection.run(command, check=False)
 
-            if no_such_file and result.exit_status != 0:
-                if result.stderr.endswith('No such file or directory\n'):
-                    raise NoSuchFileError(result.exit_status,
-                                          stdout=result.stdout,
-                                          stderr=result.stderr)
+        if no_such_file and result.exit_status != 0:
+            if result.stderr.endswith('No such file or directory\n'):
+                raise NoSuchFileError(result.exit_status,
+                                      stdout=result.stdout,
+                                      stderr=result.stderr)
 
-            if check and result.exit_status != 0:
-                raise ShellError(result.exit_status,
-                                 stdout=result.stdout,
-                                 stderr=result.stderr)
+        if check and result.exit_status != 0:
+            raise ShellError(result.exit_status,
+                             stdout=result.stdout,
+                             stderr=result.stderr)
 
-            logging.debug("Result stdout = '%s'", result.stdout)
-            return result.stdout
+        logging.debug("Result stdout = '%s'", result.stdout)
+        return result.stdout
 
     async def put(self, path, local_path) -> None:
-        host = self.ssh_settings['host']
         if path.startswith('~/'):
-            username: str = self.ssh_settings['username']
+            username: str = self.username
             if username == 'root':
                 path = "/root/{}".format(path[2:])
             else:
                 path = "/home/{}/{}".format(username, path[2:])
 
-        logging.info("sftp %s -> %s:%s", local_path, host, path)
-        async with asyncssh.connect(**self.ssh_settings) as ssh:
-            async with ssh.start_sftp_client() as sftp:
-                await sftp.put(local_path, path)
+        async with self.connection.start_sftp_client() as sftp:
+            await sftp.put(local_path, path)
+
+
+class SSHHost:
+    ssh_settings: Dict
+    connection: Any
+
+    def __init__(self, **kwargs):
+        self.ssh_settings = kwargs
+        super().__init__()
+
+    async def __aenter__(self):
+        self.connection = await asyncssh.connect(**self.ssh_settings).__aenter__()
+        return SSHExecutor(connection=self.connection,
+                           username=self.ssh_settings['username'],
+                           is_root=(self.ssh_settings['username'] == 'root'))
+
+    async def __aexit__(self, *args, **kwargs):
+        return await self.connection.__aexit__(*args, **kwargs)
