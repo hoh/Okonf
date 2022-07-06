@@ -118,6 +118,23 @@ class FileContent(Fact):
         return '{"remote_path": self.remote_path, "content": ...}'
 
 
+class FileExecutable(Fact):
+    """Ensure that a file is executable"""
+
+    def __init__(self, remote_path):
+        self.remote_path = remote_path
+
+    async def enquire(self, host: Executor) -> bool:
+        command = "test -x {} && echo True || echo False".format(self.remote_path)
+        result = await host.run(command)
+        return result.strip() == "True"
+
+
+    async def enforce(self, host: Executor):
+        await host.run("chmod a+x {}".format(self.remote_path))
+        return True
+
+
 class DirectoryPresent(Fact):
     """Ensure that a directory is present"""
 
