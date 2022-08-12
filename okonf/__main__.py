@@ -1,6 +1,7 @@
 import asyncio
 from typing import Tuple, Dict, NewType, Optional
 
+from colorama import Fore
 from typer import Typer
 
 from .connectors.abstract import Executor
@@ -42,6 +43,7 @@ def check(
         target_host: Executor = file_hosts[host]
         target_config = file_configs[host]
 
+        print(f"{Fore.WHITE}Host {Fore.CYAN}{host}{Fore.WHITE}:")
         result = run_coroutine(run_on_host(target_host, target_config.check))
         print(format_collection_result(result))
 
