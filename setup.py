@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='Okonf',
-      version='0.2.0',
+      version='0.2.1',
       description='Asynchronous configuration management based on Python Asyncio',
       long_description=open('README.md').read(),
       author='Hugo Herter',
