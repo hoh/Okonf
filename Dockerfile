@@ -1,9 +1,10 @@
 FROM debian:buster
 
 RUN apt-get update && apt-get -y upgrade && apt-get -y install \
-    virtualenv sudo git openssh-server
+    --no-install-recommends \
+    python3-venv sudo git openssh-server
 
-RUN virtualenv -p python3 /opt/venv
+RUN python3 -m venv /opt/venv
 
 COPY requirements /opt/requirements
 RUN /opt/venv/bin/pip install -r /opt/requirements/tests.txt

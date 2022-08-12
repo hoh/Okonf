@@ -25,10 +25,7 @@ class Virtualenv(Fact):
         raise NotImplementedError()
 
     async def enforce(self, host: Executor) -> bool:
-        command_list: List[str] = ["virtualenv"]
-
-        if self.python:
-            command_list.append("-p {0}".format(self.python))
+        command_list: List[str] = [self.python, "-m", "venv"]
 
         if self.site_packages:
             command_list.append("--system-site-packages")
