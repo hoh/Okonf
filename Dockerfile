@@ -1,4 +1,4 @@
-FROM debian:buster
+FROM debian:bullseye
 
 RUN apt-get update && apt-get -y upgrade && apt-get -y install \
     --no-install-recommends \
@@ -19,3 +19,5 @@ ENV PATH="/opt/venv/bin:$PATH"
 ENV PYTHONPATH="/opt/:/opt/venv/lib/python3.5"
 
 WORKDIR /opt
+
+CMD "/opt/run_tests.sh"
