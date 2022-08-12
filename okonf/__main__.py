@@ -1,5 +1,5 @@
 import asyncio
-from typing import Tuple, Dict, NewType
+from typing import Tuple, Dict, NewType, Optional
 
 from typer import Typer
 
@@ -26,33 +26,48 @@ async def run_on_host(host, operation):
 
 
 @app.command()
-def check(file_path: str, host: str, debug: bool = False, info: bool = False):
+def check(
+    file_path: str, hosts: Optional[str] = None, debug: bool = False, info: bool = False
+):
     setup_logger(debug, info)
 
     file_configs, file_hosts = load_config(file_path)
-    if host is None and len(file_hosts) == 1:
-        host = list(file_hosts.keys())[0]
-    target_host: Executor = file_hosts[host]
-    target_config = file_configs[host]
 
-    result = run_coroutine(run_on_host(target_host, target_config.check))
-    print(format_collection_result(result))
+    if not hosts:
+        hosts = list(file_hosts.keys())
+    else:
+        hosts = hosts.split(",")
+
+    for host in hosts:
+        target_host: Executor = file_hosts[host]
+        target_config = file_configs[host]
+
+        result = run_coroutine(run_on_host(target_host, target_config.check))
+        print(format_collection_result(result))
 
     asyncio.get_event_loop().close()
     return {"checked": result}
 
 
 @app.command()
-def apply(file_path: str, host: str, debug: bool = False, info: bool = False):
+def apply(
+    file_path: str, hosts: Optional[str] = None, debug: bool = False, info: bool = False
+):
     setup_logger(debug, info)
 
     file_configs, file_hosts = load_config(file_path)
 
-    target_host: Executor = file_hosts[host]
-    target_config = file_configs[host]
+    if not hosts:
+        hosts = list(file_hosts.keys())
+    else:
+        hosts = hosts.split(",")
 
-    result = run_coroutine(run_on_host(target_host, target_config.apply))
-    print(format_collection_result(result))
+    for host in hosts:
+        target_host: Executor = file_hosts[host]
+        target_config = file_configs[host]
+
+        result = run_coroutine(run_on_host(target_host, target_config.apply))
+        print(format_collection_result(result))
 
     asyncio.get_event_loop().close()
     return {"applied": result}
