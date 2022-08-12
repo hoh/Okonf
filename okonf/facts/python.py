@@ -60,7 +60,7 @@ class PipInstalled(Fact):
         else:
             command = "pip freeze"
         output = await host.run(command)
-        lines = (line.split("==", 1) for line in output.strip().split("\n"))
+        lines = (line.split("==", 1) for line in output.strip().split("\n") if line)
         return {key.lower(): value for key, value in lines}
 
     async def enquire(self, host: Executor) -> bool:
