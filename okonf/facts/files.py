@@ -12,6 +12,7 @@ from ..connectors.exceptions import NoSuchFileError
 
 class FilePresent(Fact):
     """Ensure that a file is present"""
+
     remote_path: str
 
     def __init__(self, remote_path: str) -> None:
@@ -19,7 +20,7 @@ class FilePresent(Fact):
 
     async def enquire(self, host: Executor) -> bool:
         command = "ls -d {}".format(self.remote_path)
-        return await host.run(command, check=False) != ''
+        return await host.run(command, check=False) != ""
 
     async def enforce(self, host: Executor) -> bool:
         await host.run("touch {}".format(self.remote_path))
@@ -39,6 +40,7 @@ class FileAbsent(FilePresent):
 
 class FileHash(Fact):
     """Ensure that a file has a given hash"""
+
     remote_path: str
     hash: bytes
 
@@ -48,11 +50,12 @@ class FileHash(Fact):
 
     async def get_hash(self, host: Executor):
         try:
-            output = await host.run("sha256sum {}".format(self.remote_path),
-                                    no_such_file=True)
+            output = await host.run(
+                "sha256sum {}".format(self.remote_path), no_such_file=True
+            )
         except NoSuchFileError:
             return False
-        return output.split(' ', 1)[0].encode()
+        return output.split(" ", 1)[0].encode()
 
     async def enquire(self, host: Executor) -> bool:
         remote_hash = await self.get_hash(host)
@@ -101,8 +104,7 @@ class FileContent(Fact):
 
     async def check(self, host: Executor):
         content_hash = sha256(self.content).hexdigest().encode()
-        return await FileHash(
-            self.remote_path, content_hash).check(host)
+        return await FileHash(self.remote_path, content_hash).check(host)
 
     async def enforce(self, host: Executor):
         with NamedTemporaryFile() as tmpfile:
@@ -120,7 +122,7 @@ class DirectoryPresent(Fact):
 
     async def enquire(self, host: Executor) -> bool:
         command = "ls -d {}".format(self.remote_path)
-        return await host.run(command, check=False) != ''
+        return await host.run(command, check=False) != ""
 
     async def enforce(self, host: Executor) -> bool:
         await host.run("mkdir -p {}".format(self.remote_path))
@@ -133,11 +135,13 @@ class DirectoryPresent(Fact):
 
 class DirectoryAbsent(DirectoryPresent):
     """Ensure that a directory is absent"""
+
     recursive: bool
     force: bool
 
-    def __init__(self, remote_path: str, recursive: bool = False,
-                 force: bool = False) -> None:
+    def __init__(
+        self, remote_path: str, recursive: bool = False, force: bool = False
+    ) -> None:
         self.recursive = True
         self.force = force
         super().__init__(remote_path)
@@ -158,8 +162,7 @@ class DirectoryAbsent(DirectoryPresent):
 class DirectoryCopy(Fact):
     """Ensure that a remote directory contains a copy of a local one"""
 
-    def __init__(self, remote_path: str, local_path: str,
-                 delete: bool = False) -> None:
+    def __init__(self, remote_path: str, local_path: str, delete: bool = False) -> None:
         self.remote_path = remote_path
         self.local_path = local_path
         self.delete = delete
@@ -169,7 +172,7 @@ class DirectoryCopy(Fact):
             command = "find %s -type f -exec sha256sum {} +" % self.remote_path
             output = await host.run(command, no_such_file=True)
             result = {}
-            for line in output.strip().split('\n'):
+            for line in output.strip().split("\n"):
                 if not line:
                     continue
                 hash, path = line.split()
@@ -182,19 +185,19 @@ class DirectoryCopy(Fact):
         try:
             command = "find {} -type d".format(self.remote_path)
             output = await host.run(command, no_such_file=True)
-            result = output.strip().split('\n')
-            return result if result != [''] else []
+            result = output.strip().split("\n")
+            return result if result != [""] else []
         except NoSuchFileError:
             return []
 
     def _get_remote_path(self, local_path):
         assert local_path.startswith(self.local_path)
-        rel_path = local_path[len(self.local_path):].strip('/')
+        rel_path = local_path[len(self.local_path) :].strip("/")
         return join(self.remote_path, rel_path)
 
     def _get_local_path(self, remote_path):
         assert remote_path.startswith(self.remote_path)
-        rel_path = remote_path[len(self.remote_path):].strip('/')
+        rel_path = remote_path[len(self.remote_path) :].strip("/")
         return join(self.local_path, rel_path)
 
     async def subfacts(self, host: Executor):
@@ -213,16 +216,16 @@ class DirectoryCopy(Fact):
             remote_root = self._get_remote_path(root)
 
             for dirname in dirs:
-                dirs_to_create.append(
-                    DirectoryPresent(join(remote_root, dirname))
-                )
+                dirs_to_create.append(DirectoryPresent(join(remote_root, dirname)))
 
             for filename in files:
                 remote_path = join(remote_root, filename)
                 files_to_copy.append(
-                    FileCopy(remote_path,
-                             join(root, filename),
-                             remote_hash=existing_files.get(remote_path))
+                    FileCopy(
+                        remote_path,
+                        join(root, filename),
+                        remote_hash=existing_files.get(remote_path),
+                    )
                 )
 
         if self.delete:
@@ -240,18 +243,29 @@ class DirectoryCopy(Fact):
             files_to_remove = []
             dirs_to_remove = []
 
-        return Collection((
-            # Both copy/creation and removal can be concurrent:
-            Sequence((
-                Collection(dirs_to_create, title="Directories to be present"),
-                Collection(files_to_copy, title="Files to be present"),
-            ), title="Directories and files to be present"),
-            Sequence((
-                # Must remove files before directories
-                Collection(files_to_remove, title="Files to be absent"),
-                Collection(dirs_to_remove, title="Directories to be absent"),
-            ), title="Directories and files to be absent") if self.delete else Collection(()),
-        ), title=f"Directory copy from {self.local_path} to {self.remote_path}")
+        return Collection(
+            (
+                # Both copy/creation and removal can be concurrent:
+                Sequence(
+                    (
+                        Collection(dirs_to_create, title="Directories to be present"),
+                        Collection(files_to_copy, title="Files to be present"),
+                    ),
+                    title="Directories and files to be present",
+                ),
+                Sequence(
+                    (
+                        # Must remove files before directories
+                        Collection(files_to_remove, title="Files to be absent"),
+                        Collection(dirs_to_remove, title="Directories to be absent"),
+                    ),
+                    title="Directories and files to be absent",
+                )
+                if self.delete
+                else Collection(()),
+            ),
+            title=f"Directory copy from {self.local_path} to {self.remote_path}",
+        )
 
     async def check(self, host: Executor) -> FactCheck:
         facts = await self.subfacts(host)

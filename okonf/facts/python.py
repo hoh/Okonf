@@ -8,8 +8,9 @@ from ..connectors.abstract import Executor
 class Virtualenv(Fact):
     """Ensure that a virtual environment is present"""
 
-    def __init__(self, path: str, python: str = 'python3', site_packages=False,
-                 always_copy=False) -> None:
+    def __init__(
+        self, path: str, python: str = "python3", site_packages=False, always_copy=False
+    ) -> None:
         self.path = path
         self.python = python
         self.site_packages = site_packages
@@ -24,19 +25,19 @@ class Virtualenv(Fact):
         raise NotImplementedError()
 
     async def enforce(self, host: Executor) -> bool:
-        command_list: List[str] = ['virtualenv']
+        command_list: List[str] = ["virtualenv"]
 
         if self.python:
-            command_list.append('-p {0}'.format(self.python))
+            command_list.append("-p {0}".format(self.python))
 
         if self.site_packages:
-            command_list.append('--system-site-packages')
+            command_list.append("--system-site-packages")
 
         if self.always_copy:
-            command_list.append('--always-copy')
+            command_list.append("--always-copy")
 
         command_list.append(self.path)
-        command: str = ' '.join(command_list)
+        command: str = " ".join(command_list)
 
         await host.run(command)
         return True
@@ -47,9 +48,9 @@ class Virtualenv(Fact):
 
 
 class PipInstalled(Fact):
-
-    def __init__(self, packages: Iterable[str], virtualenv: str = None,
-                 latest: bool = False) -> None:
+    def __init__(
+        self, packages: Iterable[str], virtualenv: str = None, latest: bool = False
+    ) -> None:
         self.packages = packages
         self.virtualenv = virtualenv
         self.latest = latest
@@ -62,21 +63,15 @@ class PipInstalled(Fact):
         else:
             command = "pip freeze"
         output = await host.run(command)
-        lines = (
-            line.split('==', 1)
-            for line in output.strip().split('\n')
-        )
-        return {
-            key.lower(): value
-            for key, value in lines
-        }
+        lines = (line.split("==", 1) for line in output.strip().split("\n"))
+        return {key.lower(): value for key, value in lines}
 
     async def enquire(self, host: Executor) -> bool:
         installed = await self.info(host)
         for pkg in self.packages:
-            if '==' in pkg:
+            if "==" in pkg:
                 # Version specified
-                pkg, version = pkg.split('==')
+                pkg, version = pkg.split("==")
                 if version != installed.get(pkg.lower(), False):
                     return False
             else:
@@ -89,12 +84,12 @@ class PipInstalled(Fact):
         if self.virtualenv:
             pip = "{}/bin/pip".format(self.virtualenv)
         else:
-            pip = 'pip'
+            pip = "pip"
 
-        command = "{} install {}".format(pip, ' '.join(self.packages))
+        command = "{} install {}".format(pip, " ".join(self.packages))
         await host.run(command)
         return True
 
     @property
     def description(self) -> str:
-        return str("{} in {}".format(','.join(self.packages), self.virtualenv))
+        return str("{} in {}".format(",".join(self.packages), self.virtualenv))

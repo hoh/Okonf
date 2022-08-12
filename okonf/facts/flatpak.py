@@ -4,7 +4,6 @@ from ..connectors.exceptions import ShellError
 
 
 class FlatpakPresent(Fact):
-
     def __init__(self, name, system=False, sudo=False):
         self.name = name
         self.sudo = sudo
@@ -29,7 +28,6 @@ class FlatpakPresent(Fact):
 
 
 class FlatpakUpdated(Fact):
-
     def __init__(self, names=tuple(), sudo=False):
         self.names = names
         self.sudo = sudo
@@ -43,4 +41,3 @@ class FlatpakUpdated(Fact):
         else:
             await host.run("flatpak update")
         return True
-

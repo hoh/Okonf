@@ -3,16 +3,24 @@ import pytest
 from shutil import rmtree
 
 from okonf.connectors.local import LocalHost
-from okonf.facts.files import FilePresent, FileAbsent, FileHash, FileCopy, \
-    FileContent, DirectoryPresent, DirectoryAbsent, DirectoryCopy
+from okonf.facts.files import (
+    FilePresent,
+    FileAbsent,
+    FileHash,
+    FileCopy,
+    FileContent,
+    DirectoryPresent,
+    DirectoryAbsent,
+    DirectoryCopy,
+)
 
 
 @pytest.mark.asyncio
 async def test_FilePresent():
     async with LocalHost() as host:
-        assert await FilePresent('/etc/hostname').check(host)
+        assert await FilePresent("/etc/hostname").check(host)
 
-        filename = '/tmp/filename'
+        filename = "/tmp/filename"
         assert not os.path.isfile(filename)
         assert not await FilePresent(filename).check(host)
 
@@ -27,9 +35,9 @@ async def test_FilePresent():
 @pytest.mark.asyncio
 async def test_FileAbsent():
     async with LocalHost() as host:
-        filename = '/tmp/filename'
+        filename = "/tmp/filename"
         assert await FileAbsent(filename).check(host)
-        open(filename, 'wb').write(b'content')
+        open(filename, "wb").write(b"content")
         assert not await FileAbsent(filename).check(host)
         assert await FileAbsent(filename).apply(host)
         assert not os.path.isfile(filename)
@@ -38,15 +46,16 @@ async def test_FileAbsent():
 @pytest.mark.asyncio
 async def test_FileHash():
     async with LocalHost() as host:
-        filename = '/tmp/filename'
-        expected_hash = b'ed7002b439e9ac845f22357d822bac14' \
-                        b'44730fbdb6016d3ec9432297b9ec9f73'
+        filename = "/tmp/filename"
+        expected_hash = (
+            b"ed7002b439e9ac845f22357d822bac14" b"44730fbdb6016d3ec9432297b9ec9f73"
+        )
 
         assert not os.path.isfile(filename)
-        assert not await FileHash(filename, b'hash').check(host)
+        assert not await FileHash(filename, b"hash").check(host)
         try:
-            open(filename, 'wb').write(b'content')
-            assert await FileHash(filename, b'').get_hash(host) == expected_hash
+            open(filename, "wb").write(b"content")
+            assert await FileHash(filename, b"").get_hash(host) == expected_hash
             assert await FileHash(filename, expected_hash).check(host)
         finally:
             os.remove(filename)
@@ -55,14 +64,14 @@ async def test_FileHash():
 @pytest.mark.asyncio
 async def test_FileCopy():
     async with LocalHost() as host:
-        remote_path = '/tmp/filename'
-        local_path = 'tests/facts/test_files.py'
+        remote_path = "/tmp/filename"
+        local_path = "tests/facts/test_files.py"
 
         assert not os.path.isfile(remote_path)
         assert not await FileCopy(remote_path, local_path).check(host)
         try:
             assert await FileCopy(remote_path, local_path).apply(host)
-            assert open(local_path, 'rb').read() == open(remote_path, 'rb').read()
+            assert open(local_path, "rb").read() == open(remote_path, "rb").read()
         finally:
             os.remove(remote_path)
 
@@ -70,14 +79,14 @@ async def test_FileCopy():
 @pytest.mark.asyncio
 async def test_FileContent():
     async with LocalHost() as host:
-        remote_path = '/tmp/filename'
-        content = b'content'
+        remote_path = "/tmp/filename"
+        content = b"content"
 
         assert not os.path.isfile(remote_path)
         assert not await FileContent(remote_path, content).check(host)
         try:
             assert await FileContent(remote_path, content).apply(host)
-            assert open(remote_path, 'rb').read() == content
+            assert open(remote_path, "rb").read() == content
         finally:
             os.remove(remote_path)
 
@@ -85,9 +94,9 @@ async def test_FileContent():
 @pytest.mark.asyncio
 async def test_DirectoryPresent():
     async with LocalHost() as host:
-        assert await DirectoryPresent('/etc').check(host)
+        assert await DirectoryPresent("/etc").check(host)
 
-        remote_path = '/tmp/filename'
+        remote_path = "/tmp/filename"
         assert not os.path.isdir(remote_path)
         assert not await DirectoryPresent(remote_path).check(host)
 
@@ -102,7 +111,7 @@ async def test_DirectoryPresent():
 @pytest.mark.asyncio
 async def test_DirectoryAbsent():
     async with LocalHost() as host:
-        remote_path = '/tmp/dirname'
+        remote_path = "/tmp/dirname"
         assert await DirectoryAbsent(remote_path).check(host)
         try:
             os.makedirs(remote_path)
@@ -115,8 +124,8 @@ async def test_DirectoryAbsent():
 @pytest.mark.asyncio
 async def test_DirectoryCopy():
     async with LocalHost() as host:
-        local_path = 'tests'
-        remote_path = '/tmp/dirname'
+        local_path = "tests"
+        remote_path = "/tmp/dirname"
 
         # TODO: handle recursive facts, check() should return False
         assert not await DirectoryCopy(remote_path, local_path).check(host)
@@ -134,20 +143,19 @@ async def test_DirectoryCopy():
 @pytest.mark.asyncio
 async def test_DirectoryCopyDelete():
     async with LocalHost() as host:
-        local_path = 'tests'
-        remote_path = '/tmp/dirname'
+        local_path = "tests"
+        remote_path = "/tmp/dirname"
 
         # TODO: handle recursive facts, check() should return False
-        assert not await DirectoryCopy(
-            remote_path, local_path, delete=True).check(host)
+        assert not await DirectoryCopy(remote_path, local_path, delete=True).check(host)
         try:
-            result = await DirectoryCopy(
-                remote_path, local_path, delete=True).apply(host)
+            result = await DirectoryCopy(remote_path, local_path, delete=True).apply(
+                host
+            )
             assert len(result.result) == 2
             # assert len(result.result[0][0]) > 0
             # assert len(result.result[0][1]) > 0
             # TODO: handle recursive facts, check() should return False
-            assert await DirectoryCopy(
-                remote_path, local_path, delete=True).check(host)
+            assert await DirectoryCopy(remote_path, local_path, delete=True).check(host)
         finally:
             rmtree(remote_path)

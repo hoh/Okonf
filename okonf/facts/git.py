@@ -6,9 +6,7 @@ from ..connectors.abstract import Executor
 
 
 class GitClone(Fact):
-
-    def __init__(self, repository: str, directory: str,
-                 branch: str = None) -> None:
+    def __init__(self, repository: str, directory: str, branch: str = None) -> None:
         self.repository = repository
         self.directory = directory
         self.branch = branch
@@ -16,9 +14,8 @@ class GitClone(Fact):
     async def get_branch(self, host: Executor) -> str:
         if not await DirectoryPresent(self.directory).check(host):
             logging.debug("Git directory absent: {}".format(self.directory))
-            return ''
-        command = "git -C {} rev-parse --abbrev-ref HEAD" \
-            .format(self.directory)
+            return ""
+        command = "git -C {} rev-parse --abbrev-ref HEAD".format(self.directory)
         branch_name = await host.run(command)
         return branch_name.strip()
 
@@ -30,8 +27,7 @@ class GitClone(Fact):
             return branch == self.branch
 
     async def enforce(self, host: Executor) -> bool:
-        await host.run("git clone {} {}"
-                       .format(self.repository, self.directory))
+        await host.run("git clone {} {}".format(self.repository, self.directory))
         return True
 
     @property

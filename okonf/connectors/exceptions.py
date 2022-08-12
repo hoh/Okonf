@@ -8,8 +8,9 @@ class ShellError(Exception):
     stderr: bytes
 
     def __str__(self):
-        return "ShellError [{}] '{}' '{}'".format(self.exit_code,
-                                                  self.stderr, self.stdout)
+        return "ShellError [{}] '{}' '{}'".format(
+            self.exit_code, self.stderr, self.stdout
+        )
 
 
 class NoSuchFileError(ShellError):

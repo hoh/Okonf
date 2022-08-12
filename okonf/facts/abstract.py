@@ -34,8 +34,7 @@ def any_true(iterable) -> bool:
 
 
 class FactCheck:
-
-    def __init__(self, fact: 'Fact', result: Union[bool, Tuple]) -> None:
+    def __init__(self, fact: "Fact", result: Union[bool, Tuple]) -> None:
         assert isinstance(result, bool) or isinstance(result, list)
         self.fact = fact
         self.result = result
@@ -51,16 +50,13 @@ class FactCheck:
 
     def __repr__(self) -> str:
         if bool(self):
-            return "{}{} {}{}".format(
-                Fore.GREEN, 'Present', Fore.WHITE, self.fact)
+            return "{}{} {}{}".format(Fore.GREEN, "Present", Fore.WHITE, self.fact)
         else:
-            return "{}{} {}{}".format(
-                Fore.RED, 'Absent', Fore.WHITE, self.fact)
+            return "{}{} {}{}".format(Fore.RED, "Absent", Fore.WHITE, self.fact)
 
 
 class FactResult:
-
-    def __init__(self, fact: 'Fact', result: Union[bool, Tuple, List]) -> None:
+    def __init__(self, fact: "Fact", result: Union[bool, Tuple, List]) -> None:
         assert isinstance(result, bool) or isinstance(result, list)
         self.fact = fact
         self.result = result
@@ -76,11 +72,9 @@ class FactResult:
 
     def __repr__(self) -> str:
         if bool(self):
-            return "{}{} {}{}".format(
-                Fore.YELLOW, 'Changed', Fore.WHITE, self.fact)
+            return "{}{} {}{}".format(Fore.YELLOW, "Changed", Fore.WHITE, self.fact)
         else:
-            return "{}{} {}{}".format(
-                Fore.MAGENTA, 'Unchanged', Fore.WHITE, self.fact)
+            return "{}{} {}{}".format(Fore.MAGENTA, "Unchanged", Fore.WHITE, self.fact)
 
 
 class Fact:
@@ -113,11 +107,10 @@ class Fact:
         return str(self.__dict__)
 
     def __str__(self) -> str:
-        arguments = (colorama.Fore.CYAN +
-                     str(self.description) +
-                     colorama.Style.RESET_ALL)
-        return ' '.join((self.__class__.__name__, arguments))
+        arguments = (
+            colorama.Fore.CYAN + str(self.description) + colorama.Style.RESET_ALL
+        )
+        return " ".join((self.__class__.__name__, arguments))
 
     def __repr__(self) -> str:
-        return "<{}[{}]>".format(self.__class__.__name__,
-                                 self.description)
+        return "<{}[{}]>".format(self.__class__.__name__, self.description)

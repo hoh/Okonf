@@ -5,6 +5,7 @@ from .ssh import SSHHost
 
 try:
     from .lxd import LXDHost
+
     assert LXDHost
 except ImportError:
     logger = logging.getLogger(__name__)

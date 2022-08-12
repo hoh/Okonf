@@ -9,7 +9,7 @@ from okonf.facts.python import Virtualenv, PipInstalled
 @pytest.mark.asyncio
 async def test_Virtualenv():
     async with LocalHost() as host:
-        path = '/tmp/virtualenv'
+        path = "/tmp/virtualenv"
 
         assert not os.path.exists(path)
         assert not await Virtualenv(path).check(host)
@@ -22,8 +22,8 @@ async def test_Virtualenv():
 @pytest.mark.asyncio
 async def test_PipInstalled():
     async with LocalHost() as host:
-        packages = ['hereby']
-        virtualenv = '/tmp/virtualenv'
+        packages = ["hereby"]
+        virtualenv = "/tmp/virtualenv"
 
         await Virtualenv(virtualenv).apply(host)
 

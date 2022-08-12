@@ -13,21 +13,21 @@ def run_coroutine(task, debug=False):
 async def get_local_file_hash(file_path: str) -> bytes:
     """Get the sha256 hash of a file on the local filesyste."""
     if not isfile(file_path):
-        raise FileNotFoundError("No such file or directory: '{}'"
-                                .format(file_path))
+        raise FileNotFoundError("No such file or directory: '{}'".format(file_path))
 
-    subprocess = await create_subprocess_exec('sha256sum', file_path,
-                                              stdout=asyncio.subprocess.PIPE)
+    subprocess = await create_subprocess_exec(
+        "sha256sum", file_path, stdout=asyncio.subprocess.PIPE
+    )
 
     if subprocess.stdout:
         local_hash = await subprocess.stdout.read()
-        return local_hash.split(b' ', 1)[0]
+        return local_hash.split(b" ", 1)[0]
     else:
-        return b''
+        return b""
 
 
 def setup_logger(debug, info):
-    root_logger = logging.getLogger('')
+    root_logger = logging.getLogger("")
 
     if debug:
         level = logging.DEBUG
@@ -42,7 +42,7 @@ def setup_logger(debug, info):
 def format_collection_result(result, level: int = 0):
     """Format the result of running check or apply on a collection of facts,
     recursively."""
-    output = "{}- {}\n".format('  ' * level, result)
+    output = "{}- {}\n".format("  " * level, result)
     try:
         for r in result.result:
             output += format_collection_result(r, level=level + 1)

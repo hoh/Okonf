@@ -22,23 +22,23 @@ class SSHExecutor(Executor):
         result = await self.connection.run(command, check=False)
 
         if no_such_file and result.exit_status != 0:
-            if result.stderr.endswith('No such file or directory\n'):
-                raise NoSuchFileError(result.exit_status,
-                                      stdout=result.stdout,
-                                      stderr=result.stderr)
+            if result.stderr.endswith("No such file or directory\n"):
+                raise NoSuchFileError(
+                    result.exit_status, stdout=result.stdout, stderr=result.stderr
+                )
 
         if check and result.exit_status != 0:
-            raise ShellError(result.exit_status,
-                             stdout=result.stdout,
-                             stderr=result.stderr)
+            raise ShellError(
+                result.exit_status, stdout=result.stdout, stderr=result.stderr
+            )
 
         logging.debug("Result stdout = '%s'", result.stdout)
         return result.stdout
 
     async def put(self, path, local_path) -> None:
-        if path.startswith('~/'):
+        if path.startswith("~/"):
             username: str = self.username
-            if username == 'root':
+            if username == "root":
                 path = "/root/{}".format(path[2:])
             else:
                 path = "/home/{}/{}".format(username, path[2:])
@@ -57,9 +57,11 @@ class SSHHost:
 
     async def __aenter__(self):
         self.connection = await asyncssh.connect(**self.ssh_settings).__aenter__()
-        return SSHExecutor(connection=self.connection,
-                           username=self.ssh_settings['username'],
-                           is_root=(self.ssh_settings['username'] == 'root'))
+        return SSHExecutor(
+            connection=self.connection,
+            username=self.ssh_settings["username"],
+            is_root=(self.ssh_settings["username"] == "root"),
+        )
 
     async def __aexit__(self, *args, **kwargs):
         return await self.connection.__aexit__(*args, **kwargs)

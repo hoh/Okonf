@@ -10,10 +10,11 @@ class Collection(Fact):
     Unordered collection of facts. All will be applied together
     asynchronously.
     """
+
     facts: Any
     title: str
 
-    def __init__(self, facts, title: str = ''):
+    def __init__(self, facts, title: str = ""):
         self.facts = list(facts)
         self.title = title
 
@@ -24,17 +25,11 @@ class Collection(Fact):
         :param host:
         :return:
         """
-        result = await asyncio.gather(
-            *(step.check(host)
-              for step in self.facts)
-        )
+        result = await asyncio.gather(*(step.check(host) for step in self.facts))
         return FactCheck(fact=self, result=result)
 
     async def apply(self, host: Executor) -> FactResult:
-        result = await asyncio.gather(
-            *(step.apply(host)
-              for step in self.facts)
-        )
+        result = await asyncio.gather(*(step.apply(host) for step in self.facts))
         return FactResult(fact=self, result=result)
 
     async def enquire(self, host: Executor) -> bool:
@@ -43,7 +38,7 @@ class Collection(Fact):
     async def enforce(self, host: Executor) -> bool:
         raise NotImplementedError()
 
-    def __add__(self, other: Union['Sequence', 'Collection']) -> 'Collection':
+    def __add__(self, other: Union["Sequence", "Collection"]) -> "Collection":
         if isinstance(other, Sequence):
             return Sequence([self, other])
         elif isinstance(other, Collection):
@@ -70,7 +65,7 @@ class Sequence(Collection):
             result.append(await step.apply(host))
         return FactResult(self, result)
 
-    def __add__(self, other: Union[Collection, 'Sequence']) -> Collection:
+    def __add__(self, other: Union[Collection, "Sequence"]) -> Collection:
         if isinstance(other, Sequence):
             return Sequence(self.facts + other.facts)
         elif isinstance(other, Collection):

@@ -6,6 +6,7 @@ from ..connectors.abstract import Executor
 
 class GroupMember(Fact):
     """Ensure that a user is member of a group"""
+
     username: str
     group: str
 
@@ -19,7 +20,7 @@ class GroupMember(Fact):
 
         prefix = "{} : ".format(self.username)
         assert result.startswith(prefix)
-        return result[len(prefix):].split()
+        return result[len(prefix) :].split()
 
     async def enquire(self, host: Executor) -> bool:
         info = await self.info(host)
@@ -36,6 +37,7 @@ class GroupMember(Fact):
 
 class UserShell(Fact):
     """Ensure that a user uses the given shell"""
+
     username: str
     shell: str
 
@@ -45,12 +47,12 @@ class UserShell(Fact):
 
     async def enquire(self, host: Executor) -> bool:
         existing_shells = await host.run("cat /etc/shells", check=False)
-        if self.shell not in existing_shells.split('\n'):
+        if self.shell not in existing_shells.split("\n"):
             raise ValueError(f"Unknown shell: '{self.shell}'")
 
         user_shells = await host.run("cat /etc/passwd", check=False)
-        for line in user_shells.split('\n'):
-            fields = line.split(':')
+        for line in user_shells.split("\n"):
+            fields = line.split(":")
             username = fields[0]
             shell = fields[-1]
             if username == self.username:
@@ -67,4 +69,3 @@ class UserShell(Fact):
     @property
     def description(self) -> str:
         return f"Shell {self.shell} for {self.username}"
-

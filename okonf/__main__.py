@@ -9,14 +9,14 @@ from .utils import run_coroutine, format_collection_result, setup_logger
 
 app = Typer()
 
-Hosts = NewType('Hosts', Dict[str, Executor])
+Hosts = NewType("Hosts", Dict[str, Executor])
 
 
 def load_config(file_path: str) -> Tuple[Dict[str, Fact], Hosts]:
     locals_: Dict = {}
     exec(open(file_path).read(), locals_)
-    file_hosts: Hosts = locals_['hosts']
-    file_configs = locals_['configs']
+    file_hosts: Hosts = locals_["hosts"]
+    file_configs = locals_["configs"]
     return file_configs, file_hosts
 
 
@@ -26,8 +26,7 @@ async def run_on_host(host, operation):
 
 
 @app.command()
-def check(file_path: str, host: str,
-          debug: bool = False, info: bool = False):
+def check(file_path: str, host: str, debug: bool = False, info: bool = False):
     setup_logger(debug, info)
 
     file_configs, file_hosts = load_config(file_path)
@@ -40,12 +39,11 @@ def check(file_path: str, host: str,
     print(format_collection_result(result))
 
     asyncio.get_event_loop().close()
-    return {'checked': result}
+    return {"checked": result}
 
 
 @app.command()
-def apply(file_path: str, host: str,
-          debug: bool = False, info: bool = False):
+def apply(file_path: str, host: str, debug: bool = False, info: bool = False):
     setup_logger(debug, info)
 
     file_configs, file_hosts = load_config(file_path)
@@ -57,8 +55,8 @@ def apply(file_path: str, host: str,
     print(format_collection_result(result))
 
     asyncio.get_event_loop().close()
-    return {'applied': result}
+    return {"applied": result}
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app()

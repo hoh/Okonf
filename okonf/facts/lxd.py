@@ -5,16 +5,14 @@ from ..connectors.abstract import Executor
 
 
 class Container(Fact):
-
-    def __init__(self, name: str, image: str = 'images:debian/stretch'):
+    def __init__(self, name: str, image: str = "images:debian/stretch"):
         self.name = name
         self.image = image
 
     async def info(self, host: Executor):
         command = "lxc list --format=json"
         result = json.loads(await host.run(command))
-        existing = [container for container in result
-                    if container['name'] == self.name]
+        existing = [container for container in result if container["name"] == self.name]
         return existing[0] if existing else None
 
     async def enquire(self, host: Executor):
@@ -22,6 +20,5 @@ class Container(Fact):
         return existing is not None
 
     async def enforce(self, host: Executor):
-        await host.run("lxc launch {} {}"
-                       .format(self.image, self.name))
+        await host.run("lxc launch {} {}".format(self.image, self.name))
         return True
