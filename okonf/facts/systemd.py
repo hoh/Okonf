@@ -36,6 +36,23 @@ class ServiceStarted(Fact):
             return False
 
     async def enforce(self, host: Executor) -> bool:
-        async with host.lock(f"systemctl-start-service-{self.name}"):
+        async with host.lock(f"systemctl-service-{self.name}"):
             await host.run(f"sudo systemctl start {self.name}")
+        return True
+
+
+class ServiceRestarted(Fact):
+    """Ensure that a Systemd service is restarted"""
+
+    name: str
+
+    def __init__(self, name: str) -> None:
+        self.name = name
+
+    async def enquire(self, host: Executor) -> bool:
+        return False
+
+    async def enforce(self, host: Executor) -> bool:
+        async with host.lock(f"systemctl-service-{self.name}"):
+            await host.run(f"sudo systemctl restart {self.name}")
         return True
