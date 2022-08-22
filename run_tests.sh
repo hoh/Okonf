@@ -8,4 +8,4 @@ coverage html
 echo "Running Mypy"
 mypy --ignore-missing-imports okonf
 
-black --check
+black --check okonf

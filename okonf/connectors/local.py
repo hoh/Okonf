@@ -13,13 +13,19 @@ from .exceptions import NoSuchFileError, ShellError
 
 class LocalExecutor(Executor):
     async def run(
-        self, command: str, check: bool = True, no_such_file: bool = False, env: Optional[Dict] = None
+        self,
+        command: str,
+        check: bool = True,
+        no_such_file: bool = False,
+        env: Optional[Dict] = None,
     ) -> str:
         logging.debug("run locally " + colorama.Fore.YELLOW + "$ %s", command)
         colorama.reinit()
 
         process = await asyncio.create_subprocess_shell(
-            cmd=command, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
+            cmd=command,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
             env=env,
         )
 

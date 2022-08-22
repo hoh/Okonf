@@ -13,7 +13,9 @@ app = Typer()
 Hosts = NewType("Hosts", Dict[str, Executor])
 
 import logging
+
 logging.basicConfig(level=logging.DEBUG)
+
 
 def load_config(file_path: str) -> Tuple[Dict[str, Fact], Hosts]:
     locals_: Dict = {}

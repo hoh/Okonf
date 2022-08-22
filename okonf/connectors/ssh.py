@@ -27,7 +27,9 @@ class SSHExecutor(Executor):
         self.username = username
         super().__init__(is_root=is_root)
 
-    async def run(self, command: str, check=True, no_such_file=False, env: Optional[Dict] = None) -> str:
+    async def run(
+        self, command: str, check=True, no_such_file=False, env: Optional[Dict] = None
+    ) -> str:
         logging.info("run {self.connection} {command}")
 
         result = await self.connection.run(command, check=False, env=env)
@@ -37,14 +39,10 @@ class SSHExecutor(Executor):
 
         if no_such_file and result.exit_status and stderr:
             if stderr.endswith(b"No such file or directory\n"):
-                raise NoSuchFileError(
-                    result.exit_status, stdout=stdout, stderr=stderr
-                )
+                raise NoSuchFileError(result.exit_status, stdout=stdout, stderr=stderr)
 
         if check and result.exit_status:
-            raise ShellError(
-                result.exit_status, stdout=stdout, stderr=stderr
-            )
+            raise ShellError(result.exit_status, stdout=stdout, stderr=stderr)
 
         logging.debug("Result stdout = '%s'", stdout)
         return stdout.decode()

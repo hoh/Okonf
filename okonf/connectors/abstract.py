@@ -15,7 +15,11 @@ class Executor(ABC):
 
     @abstractmethod
     async def run(
-        self, command: str, check: bool = True, no_such_file: bool = False, env: Optional[Dict] = None,
+        self,
+        command: str,
+        check: bool = True,
+        no_such_file: bool = False,
+        env: Optional[Dict] = None,
     ) -> str:
         raise NotImplementedError()
 
