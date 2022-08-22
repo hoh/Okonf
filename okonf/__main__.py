@@ -12,6 +12,8 @@ app = Typer()
 
 Hosts = NewType("Hosts", Dict[str, Executor])
 
+import logging
+logging.basicConfig(level=logging.DEBUG)
 
 def load_config(file_path: str) -> Tuple[Dict[str, Fact], Hosts]:
     locals_: Dict = {}
@@ -35,11 +37,11 @@ def check(
     file_configs, file_hosts = load_config(file_path)
 
     if not hosts:
-        hosts = list(file_hosts.keys())
+        hosts_list = list(file_hosts.keys())
     else:
-        hosts = hosts.split(",")
+        hosts_list = hosts.split(",")
 
-    for host in hosts:
+    for host in hosts_list:
         target_host: Executor = file_hosts[host]
         target_config = file_configs[host]
 
@@ -60,11 +62,11 @@ def apply(
     file_configs, file_hosts = load_config(file_path)
 
     if not hosts:
-        hosts = list(file_hosts.keys())
+        hosts_list = list(file_hosts.keys())
     else:
-        hosts = hosts.split(",")
+        hosts_list = hosts.split(",")
 
-    for host in hosts:
+    for host in hosts_list:
         target_host: Executor = file_hosts[host]
         target_config = file_configs[host]
 
