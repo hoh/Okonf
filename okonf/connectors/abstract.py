@@ -1,7 +1,7 @@
 import asyncio
 from abc import ABC, abstractmethod
 from asyncio import Lock
-from typing import Dict
+from typing import Dict, Optional
 
 
 class Executor(ABC):
@@ -15,7 +15,7 @@ class Executor(ABC):
 
     @abstractmethod
     async def run(
-        self, command: str, check: bool = True, no_such_file: bool = False
+        self, command: str, check: bool = True, no_such_file: bool = False, env: Optional[Dict] = None,
     ) -> str:
         raise NotImplementedError()
 

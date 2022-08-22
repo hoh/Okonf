@@ -1,25 +1,26 @@
 import logging
-from typing import Dict, Any
+from typing import Dict, Optional, Union
 
 import asyncssh
+from asyncssh import SSHClientConnection
 
 from .abstract import Executor
 from .exceptions import NoSuchFileError, ShellError
 
 
 class SSHExecutor(Executor):
-    connection: Any
+    connection: SSHClientConnection
     username: str
 
-    def __init__(self, connection, username: str, is_root: bool):
+    def __init__(self, connection: SSHClientConnection, username: str, is_root: bool):
         self.connection = connection
         self.username = username
         super().__init__(is_root=is_root)
 
-    async def run(self, command: str, check=True, no_such_file=False) -> str:
+    async def run(self, command: str, check=True, no_such_file=False, env: Optional[Dict] = None) -> bytes:
         logging.info("run {self.connection} {command}")
 
-        result = await self.connection.run(command, check=False)
+        result = await self.connection.run(command, check=False, env=env)
 
         if no_such_file and result.exit_status != 0:
             if result.stderr.endswith("No such file or directory\n"):
@@ -49,7 +50,7 @@ class SSHExecutor(Executor):
 
 class SSHHost:
     ssh_settings: Dict
-    connection: Any
+    connection: SSHClientConnection
 
     def __init__(self, **kwargs):
         self.ssh_settings = kwargs
