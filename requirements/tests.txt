@@ -5,3 +5,4 @@ pytest-pycodestyle
 pytest-asyncio
 
 mypy
+black
