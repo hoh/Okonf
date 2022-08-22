@@ -105,5 +105,6 @@ class AptUpgraded(Fact):
 
     async def enforce(self, host: Executor) -> bool:
         async with host.lock("apt"):
-            await host.run("sudo apt-get upgrade")
+            await host.run("sudo apt-get upgrade --yes",
+                           env={"DEBIAN_FRONTEND": "noninteractive"})
         return True
