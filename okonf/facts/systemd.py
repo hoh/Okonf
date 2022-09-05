@@ -6,6 +6,8 @@ from okonf.facts.abstract import Fact
 class DaemonReloaded(Fact):
     """Ensure that Systemd has been reloaded."""
 
+    is_stateless = True
+
     def __init__(self) -> None:
         pass
 
@@ -44,6 +46,7 @@ class ServiceStarted(Fact):
 class ServiceRestarted(Fact):
     """Ensure that a Systemd service is restarted"""
 
+    is_stateless = True
     name: str
 
     def __init__(self, name: str) -> None:

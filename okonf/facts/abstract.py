@@ -33,6 +33,19 @@ def any_true(iterable) -> bool:
     return False
 
 
+def all_stateless(iterable) -> bool:
+    """Recursive check that all facts are either unchanged or stateless"""
+    for element in iterable:
+        if isinstance(element, Iterable):
+            if not all_stateless(element):
+                return False
+        elif not (element or element.fact.is_stateless):
+            return False
+        else:
+            pass
+    return True
+
+
 class FactCheck:
     def __init__(self, fact: "Fact", result: Union[bool, Tuple]) -> None:
         assert isinstance(result, bool) or isinstance(result, list)
@@ -43,12 +56,14 @@ class FactCheck:
         if isinstance(self.result, bool):
             return self.result
         else:
-            return all_true(self.result)
+            return all_stateless(self.result)
 
     def __eq__(self, other) -> bool:
         return self.result == other
 
     def __repr__(self) -> str:
+        if self.fact.is_stateless:
+            return "{}{} {}{}".format(Fore.YELLOW, "Stateless", Fore.WHITE, self.fact)
         if bool(self):
             return "{}{} {}{}".format(Fore.GREEN, "Present", Fore.WHITE, self.fact)
         else:
@@ -78,6 +93,8 @@ class FactResult:
 
 
 class Fact:
+    is_stateless: bool = False
+
     @abstractmethod
     async def enquire(self, host: Executor) -> bool:
         """Run code to inspect the state of the host, return boolean status"""

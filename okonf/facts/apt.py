@@ -76,6 +76,8 @@ class AptAbsent(AptPresent):
 
 
 class AptUpdated(Fact):
+    is_stateless = True
+
     def __init__(self, names=tuple()):
         self.names = names
 
