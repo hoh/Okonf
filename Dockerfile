@@ -12,6 +12,7 @@ RUN /opt/venv/bin/pip install -r /opt/requirements/latest.txt
 
 COPY okonf /opt/okonf
 COPY tests /opt/tests
+COPY pyproject.toml /opt/pyproject.toml
 COPY run_tests.sh /opt/run_tests.sh
 
 # Load the virtualenv

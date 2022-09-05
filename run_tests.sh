@@ -2,7 +2,7 @@
 
 set -e
 
-pytest --cov=okonf --flakes okonf tests $@
+pytest
 coverage html
 
 echo "Running Mypy"

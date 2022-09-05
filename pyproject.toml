@@ -1,0 +1,9 @@
+[tool.pytest.ini_options]
+addopts = "--flakes --cov"
+testpaths = [
+    "okonf",
+    "tests",
+]
+
+[tool.coverage.paths]
+source = ["okonf", "tests"]
