@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from typing import Tuple, Dict, NewType, Optional
 
 from colorama import Fore
@@ -8,13 +9,10 @@ from .connectors.abstract import Executor
 from .facts.abstract import Fact
 from .utils import run_coroutine, format_collection_result, setup_logger
 
-app = Typer()
-
-Hosts = NewType("Hosts", Dict[str, Executor])
-
-import logging
-
 logging.basicConfig(level=logging.DEBUG)
+
+app = Typer()
+Hosts = NewType("Hosts", Dict[str, Executor])
 
 
 def load_config(file_path: str) -> Tuple[Dict[str, Fact], Hosts]:
