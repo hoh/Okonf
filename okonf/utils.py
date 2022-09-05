@@ -6,6 +6,8 @@ from asyncio.subprocess import create_subprocess_exec
 
 def run_coroutine(task, debug=False):
     loop = asyncio.get_event_loop()
+    if debug:
+        loop.set_debug(True)
     result = loop.run_until_complete(task)
     return result
 

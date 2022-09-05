@@ -48,7 +48,9 @@ def check(
         target_config = file_configs[host]
 
         print(f"{Fore.WHITE}Host {Fore.CYAN}{host}{Fore.WHITE}:")
-        result = run_coroutine(run_on_host(target_host, target_config.check))
+        result = run_coroutine(
+            run_on_host(target_host, target_config.check), debug=debug
+        )
         print(format_collection_result(result))
 
     asyncio.get_event_loop().close()
@@ -72,7 +74,10 @@ def apply(
         target_host: Executor = file_hosts[host]
         target_config = file_configs[host]
 
-        result = run_coroutine(run_on_host(target_host, target_config.apply))
+        print(f"{Fore.WHITE}Host {Fore.CYAN}{host}{Fore.WHITE}:")
+        result = run_coroutine(
+            run_on_host(target_host, target_config.apply), debug=debug
+        )
         print(format_collection_result(result))
 
     asyncio.get_event_loop().close()
