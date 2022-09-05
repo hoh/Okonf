@@ -36,7 +36,7 @@ class Virtualenv(Fact):
         command_list.append(self.path)
         command: str = " ".join(command_list)
 
-        await host.run(command)
+        await host.check_output(command)
         return True
 
     @property
@@ -59,7 +59,7 @@ class PipInstalled(Fact):
             command = "{}/bin/pip freeze".format(self.virtualenv)
         else:
             command = "pip freeze"
-        output = await host.run(command)
+        output = await host.check_output(command)
         lines = (line.split("==", 1) for line in output.strip().split("\n") if line)
         return {key.lower(): value for key, value in lines}
 
@@ -84,7 +84,7 @@ class PipInstalled(Fact):
             pip = "pip"
 
         command = "{} install {}".format(pip, " ".join(self.packages))
-        await host.run(command)
+        await host.check_output(command)
         return True
 
     @property

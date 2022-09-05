@@ -129,9 +129,9 @@ present on disk. The `enquire` method returns whether the file is present,
 and the `enforce` method is called if the file is absent to create it by
 running shell commands on the host.
 
-
 ```python
 from okonf.facts.abstract import Fact
+
 
 class FilePresent(Fact):
     """Ensure that a file is present"""
@@ -141,10 +141,10 @@ class FilePresent(Fact):
 
     async def enquire(self, host):
         command = "ls -d {}".format(self.remote_path)
-        return await host.run(command, check=False) != ''
+        return await host.check_output(command, check=False) != ''
 
     async def enforce(self, host):
-        await host.run("touch {}".format(self.remote_path))
+        await host.check_output("touch {}".format(self.remote_path))
         return True
 ```
 

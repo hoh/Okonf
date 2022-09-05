@@ -16,7 +16,7 @@ class GitClone(Fact):
             logging.debug("Git directory absent: {}".format(self.directory))
             return ""
         command = "git -C {} rev-parse --abbrev-ref HEAD".format(self.directory)
-        branch_name = await host.run(command)
+        branch_name = await host.check_output(command)
         return branch_name.strip()
 
     async def enquire(self, host: Executor) -> bool:
@@ -27,7 +27,9 @@ class GitClone(Fact):
             return branch == self.branch
 
     async def enforce(self, host: Executor) -> bool:
-        await host.run("git clone {} {}".format(self.repository, self.directory))
+        await host.check_output(
+            "git clone {} {}".format(self.repository, self.directory)
+        )
         return True
 
     @property

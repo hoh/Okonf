@@ -11,7 +11,7 @@ class Container(Fact):
 
     async def info(self, host: Executor):
         command = "lxc list --format=json"
-        result = json.loads(await host.run(command))
+        result = json.loads(await host.check_output(command))
         existing = [container for container in result if container["name"] == self.name]
         return existing[0] if existing else None
 
@@ -20,5 +20,5 @@ class Container(Fact):
         return existing is not None
 
     async def enforce(self, host: Executor):
-        await host.run("lxc launch {} {}".format(self.image, self.name))
+        await host.check_output("lxc launch {} {}".format(self.image, self.name))
         return True

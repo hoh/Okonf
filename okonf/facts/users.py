@@ -16,7 +16,7 @@ class GroupMember(Fact):
 
     async def info(self, host: Executor) -> List[str]:
         command = "groups {}".format(self.username)
-        result = await host.run(command, check=False)
+        result = await host.check_output(command, check=False)
 
         prefix = "{} : ".format(self.username)
         assert result.startswith(prefix)
@@ -27,7 +27,7 @@ class GroupMember(Fact):
         return self.group in info
 
     async def enforce(self, host: Executor) -> bool:
-        await host.run("sudo adduser {} {}".format(self.username, self.group))
+        await host.check_output("sudo adduser {} {}".format(self.username, self.group))
         return True
 
     @property
@@ -46,11 +46,11 @@ class UserShell(Fact):
         self.shell = shell
 
     async def enquire(self, host: Executor) -> bool:
-        existing_shells = await host.run("cat /etc/shells", check=False)
+        existing_shells = await host.check_output("cat /etc/shells", check=False)
         if self.shell not in existing_shells.split("\n"):
             raise ValueError(f"Unknown shell: '{self.shell}'")
 
-        user_shells = await host.run("cat /etc/passwd", check=False)
+        user_shells = await host.check_output("cat /etc/passwd", check=False)
         for line in user_shells.split("\n"):
             fields = line.split(":")
             username = fields[0]
@@ -63,7 +63,7 @@ class UserShell(Fact):
         raise ValueError(f"Unknown user: '{self.username}'")
 
     async def enforce(self, host: Executor):
-        await host.run(f"chsh --shell {self.shell} {self.username}")
+        await host.check_output(f"chsh --shell {self.shell} {self.username}")
         return True
 
     @property

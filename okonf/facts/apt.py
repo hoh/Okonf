@@ -31,7 +31,7 @@ class AptPresent(Fact):
         self.name = name
 
     async def enquire(self, host: Executor) -> bool:
-        status = await host.run("dpkg -l {}".format(self.name), check=False)
+        status = await host.check_output("dpkg -l {}".format(self.name), check=False)
         for line in status.split("\n"):
             if re.match(r"ii\s+{}(\:amd64)?\s+".format(self.name), line):
                 return True
@@ -40,9 +40,9 @@ class AptPresent(Fact):
     async def enforce(self, host: Executor) -> bool:
         async with host.lock("apt"):
             if host.is_root:
-                await host.run("apt-get install -y {}".format(self.name))
+                await host.check_output("apt-get install -y {}".format(self.name))
             else:
-                await host.run("sudo apt-get install -y {}".format(self.name))
+                await host.check_output("sudo apt-get install -y {}".format(self.name))
 
         return True
 
@@ -65,9 +65,13 @@ class AptAbsent(AptPresent):
         purge = "--purge" if self.purge else ""
         async with host.lock("apt"):
             if host.is_root:
-                await host.run("apt-get remove {} -y {}".format(purge, self.name))
+                await host.check_output(
+                    "apt-get remove {} -y {}".format(purge, self.name)
+                )
             else:
-                await host.run("sudo apt-get remove {} -y {}".format(purge, self.name))
+                await host.check_output(
+                    "sudo apt-get remove {} -y {}".format(purge, self.name)
+                )
         return True
 
 
@@ -80,7 +84,7 @@ class AptUpdated(Fact):
 
     async def enforce(self, host: Executor) -> bool:
         async with host.lock("apt-update"):
-            await host.run("sudo apt-get update")
+            await host.check_output("sudo apt-get update")
         return True
 
 
@@ -92,7 +96,7 @@ class AptUpgraded(Fact):
 
     async def info(self, host: Executor) -> Dict:
         names_str = " ".join(self.names)
-        status = await host.run("apt list --upgradeable {}".format(names_str))
+        status = await host.check_output("apt list --upgradeable {}".format(names_str))
 
         if status.startswith("Listing...\n"):
             status = status[len("Listing...\n") :]
@@ -105,7 +109,7 @@ class AptUpgraded(Fact):
 
     async def enforce(self, host: Executor) -> bool:
         async with host.lock("apt"):
-            await host.run(
+            await host.check_output(
                 "sudo apt-get upgrade --yes", env={"DEBIAN_FRONTEND": "noninteractive"}
             )
         return True

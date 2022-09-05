@@ -4,8 +4,8 @@ from typing import Dict, Optional, Union
 import asyncssh
 from asyncssh import SSHClientConnection
 
+from .abstract import CommandResult
 from .abstract import Executor
-from .exceptions import NoSuchFileError, ShellError
 
 
 def to_bytes(value: Union[bytes, str, None]) -> bytes:
@@ -27,9 +27,7 @@ class SSHExecutor(Executor):
         self.username = username
         super().__init__(is_root=is_root)
 
-    async def run(
-        self, command: str, check=True, no_such_file=False, env: Optional[Dict] = None
-    ) -> str:
+    async def run(self, command: str, env: Optional[Dict] = None) -> CommandResult:
         logging.info("run {self.connection} {command}")
 
         result = await self.connection.run(command, check=False, env=env)
@@ -37,15 +35,15 @@ class SSHExecutor(Executor):
         stdout = to_bytes(result.stdout)
         stderr = to_bytes(result.stderr)
 
-        if no_such_file and result.exit_status and stderr:
-            if stderr.endswith(b"No such file or directory\n"):
-                raise NoSuchFileError(result.exit_status, stdout=stdout, stderr=stderr)
+        logging.debug("Result exit code = '%s'", result.exit_status)
+        logging.debug("Result stdout = '%s'", result.stdout)
+        logging.debug("Result stderr = '%s'", result.stderr)
 
-        if check and result.exit_status:
-            raise ShellError(result.exit_status, stdout=stdout, stderr=stderr)
-
-        logging.debug("Result stdout = '%s'", stdout)
-        return stdout.decode()
+        return CommandResult(
+            exit_code=result.exit_status,
+            stdout=stdout,
+            stderr=stderr,
+        )
 
     async def put(self, path, local_path) -> None:
         if path.startswith("~/"):

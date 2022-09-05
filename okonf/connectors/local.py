@@ -7,18 +7,15 @@ from typing import Optional, Dict
 
 import colorama
 
-from .abstract import Executor
-from .exceptions import NoSuchFileError, ShellError
+from .abstract import Executor, CommandResult
 
 
 class LocalExecutor(Executor):
     async def run(
         self,
         command: str,
-        check: bool = True,
-        no_such_file: bool = False,
         env: Optional[Dict] = None,
-    ) -> str:
+    ) -> CommandResult:
         logging.debug("run locally " + colorama.Fore.YELLOW + "$ %s", command)
         colorama.reinit()
 
@@ -33,21 +30,15 @@ class LocalExecutor(Executor):
         stderr: bytes
         stdout, stderr = await process.communicate()
 
-        logging.debug("RET %s", [process.returncode])
-
-        if process.returncode and process.returncode != "0":
-            if no_such_file:
-                if stderr.endswith(b"No such file or directory\n"):
-                    raise NoSuchFileError(
-                        process.returncode, stdout=stdout, stderr=stderr
-                    )
-            elif check:
-                raise ShellError(process.returncode, stdout=stdout, stderr=stderr)
-
-        result = stdout
-        logging.debug("Result stdout = '%s'", result)
+        logging.debug("Result exit code = '%s'", process.returncode)
+        logging.debug("Result stdout = '%s'", stdout)
         logging.debug("Result stderr = '%s'", stderr)
-        return result.decode()
+
+        return CommandResult(
+            exit_code=process.returncode,
+            stdout=stdout,
+            stderr=stderr,
+        )
 
     async def put(self, path, local_path) -> None:
         path = expanduser(path)

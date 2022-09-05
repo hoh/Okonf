@@ -20,10 +20,10 @@ class FilePresent(Fact):
 
     async def enquire(self, host: Executor) -> bool:
         command = "ls -d {}".format(self.remote_path)
-        return await host.run(command, check=False) != ""
+        return await host.check_output(command, check=False) != ""
 
     async def enforce(self, host: Executor) -> bool:
-        await host.run("touch {}".format(self.remote_path))
+        await host.check_output("touch {}".format(self.remote_path))
         return True
 
 
@@ -34,7 +34,7 @@ class FileAbsent(FilePresent):
         return not await FilePresent.enquire(self, host)
 
     async def enforce(self, host: Executor) -> bool:
-        await host.run("rm {}".format(self.remote_path))
+        await host.check_output("rm {}".format(self.remote_path))
         return True
 
 
@@ -50,7 +50,7 @@ class FileHash(Fact):
 
     async def get_hash(self, host: Executor):
         try:
-            output = await host.run(
+            output = await host.check_output(
                 "sha256sum {}".format(self.remote_path), no_such_file=True
             )
         except NoSuchFileError:
@@ -122,10 +122,10 @@ class DirectoryPresent(Fact):
 
     async def enquire(self, host: Executor) -> bool:
         command = "ls -d {}".format(self.remote_path)
-        return await host.run(command, check=False) != ""
+        return await host.check_output(command, check=False) != ""
 
     async def enforce(self, host: Executor) -> bool:
-        await host.run("mkdir -p {}".format(self.remote_path))
+        await host.check_output("mkdir -p {}".format(self.remote_path))
         return True
 
     @property
@@ -153,9 +153,9 @@ class DirectoryAbsent(DirectoryPresent):
         if self.force:
             recursive = "--recursive" if self.recursive else ""
             force = "--force" if self.force else ""
-            await host.run(f"rm {recursive} {force} {self.remote_path}")
+            await host.check_output(f"rm {recursive} {force} {self.remote_path}")
         else:
-            await host.run("rmdir {}".format(self.remote_path))
+            await host.check_output("rmdir {}".format(self.remote_path))
         return True
 
 
@@ -170,7 +170,7 @@ class DirectoryCopy(Fact):
     async def info_files_hash(self, host: Executor) -> dict:
         try:
             command = "find %s -type f -exec sha256sum {} +" % self.remote_path
-            output = await host.run(command, no_such_file=True)
+            output = await host.check_output(command, no_such_file=True)
             result = {}
             for line in output.strip().split("\n"):
                 if not line:
@@ -184,7 +184,7 @@ class DirectoryCopy(Fact):
     async def info_dirs_present(self, host: Executor):
         try:
             command = "find {} -type d".format(self.remote_path)
-            output = await host.run(command, no_such_file=True)
+            output = await host.check_output(command, no_such_file=True)
             result = output.strip().split("\n")
             return result if result != [""] else []
         except NoSuchFileError:

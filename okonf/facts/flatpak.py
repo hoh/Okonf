@@ -10,16 +10,16 @@ class FlatpakPresent(Fact):
 
     async def enquire(self, host: Executor):
         try:
-            await host.run("flatpak info {}".format(self.name), check=True)
+            await host.check_output("flatpak info {}".format(self.name), check=True)
             return True
         except ShellError:
             return False
 
     async def enforce(self, host: Executor):
         if self.sudo:
-            await host.run("sudo flatpak install -y {}".format(self.name))
+            await host.check_output("sudo flatpak install -y {}".format(self.name))
         else:
-            await host.run("flatpak install -y {}".format(self.name))
+            await host.check_output("flatpak install -y {}".format(self.name))
         return True
 
     @property
@@ -37,7 +37,7 @@ class FlatpakUpdated(Fact):
 
     async def enforce(self, host: Executor):
         if self.sudo:
-            await host.run("sudo flatpak update")
+            await host.check_output("sudo flatpak update")
         else:
-            await host.run("flatpak update")
+            await host.check_output("flatpak update")
         return True

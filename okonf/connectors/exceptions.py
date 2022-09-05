@@ -1,9 +1,10 @@
 from dataclasses import dataclass
+from typing import Optional
 
 
 @dataclass
 class ShellError(Exception):
-    exit_code: int
+    exit_code: Optional[int]
     stdout: bytes
     stderr: bytes
 

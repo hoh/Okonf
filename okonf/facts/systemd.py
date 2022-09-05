@@ -15,7 +15,7 @@ class DaemonReloaded(Fact):
 
     async def enforce(self, host: Executor) -> bool:
         async with host.lock("systemctl-daemon-reload"):
-            await host.run("sudo systemctl daemon-reload")
+            await host.check_output("sudo systemctl daemon-reload")
         return True
 
 
@@ -30,14 +30,14 @@ class ServiceStarted(Fact):
     async def enquire(self, host: Executor) -> bool:
         command = "systemctl is-active --quiet {}".format(self.name)
         try:
-            await host.run(command, check=True)
+            await host.check_output(command, check=True)
             return True
         except ShellError:
             return False
 
     async def enforce(self, host: Executor) -> bool:
         async with host.lock(f"systemctl-service-{self.name}"):
-            await host.run(f"sudo systemctl start {self.name}")
+            await host.check_output(f"sudo systemctl start {self.name}")
         return True
 
 
@@ -54,5 +54,5 @@ class ServiceRestarted(Fact):
 
     async def enforce(self, host: Executor) -> bool:
         async with host.lock(f"systemctl-service-{self.name}"):
-            await host.run(f"sudo systemctl restart {self.name}")
+            await host.check_output(f"sudo systemctl restart {self.name}")
         return True
