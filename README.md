@@ -51,10 +51,7 @@ facts = Collection([
     GitClone('git@github.com:okeso/Okonf.git', '/opt/Okonf'),
 ])
 
-loop = asyncio.get_event_loop()
-loop.run_until_complete(
-    Collection.apply(host),
-)
+asyncio.run(Collection.apply(host))
 ```
 
 ## Usage as a tool
