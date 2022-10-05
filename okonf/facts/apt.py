@@ -1,5 +1,6 @@
 import re
 from typing import Iterable, Dict, Tuple, Union, Optional
+from pathlib import Path
 
 from .abstract import Fact
 from ..connectors.abstract import Executor
@@ -26,9 +27,11 @@ def parse_upgradeable(
 
 class AptPresent(Fact):
     name: str
+    path: Optional[Path] = None
 
-    def __init__(self, name: str):
+    def __init__(self, name: str, path: Optional[Path] = None):
         self.name = name
+        self.path = path
 
     async def enquire(self, host: Executor) -> bool:
         status = await host.check_output("dpkg -l {}".format(self.name), check=False)
@@ -38,17 +41,21 @@ class AptPresent(Fact):
         return False
 
     async def enforce(self, host: Executor) -> bool:
+        name = self.path or self.name
         async with host.lock("apt"):
             if host.is_root:
-                await host.check_output("apt-get install -y {}".format(self.name))
+                await host.check_output("apt-get install -y {}".format(name))
             else:
-                await host.check_output("sudo apt-get install -y {}".format(self.name))
+                await host.check_output("sudo apt-get install -y {}".format(name))
 
         return True
 
     @property
     def description(self) -> str:
-        return str(self.name)
+        if self.path:
+            return f"{self.name} from {self.path}"
+        else:
+            return self.name
 
 
 class AptAbsent(AptPresent):
