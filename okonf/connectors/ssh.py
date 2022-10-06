@@ -1,8 +1,9 @@
+import asyncio
 import logging
 from typing import Dict, Optional, Union
 
 import asyncssh
-from asyncssh import SSHClientConnection
+from asyncssh import SSHClientConnection, ChannelOpenError
 
 from .abstract import CommandResult
 from .abstract import Executor
@@ -30,7 +31,14 @@ class SSHExecutor(Executor):
     async def run(self, command: str, env: Optional[Dict] = None) -> CommandResult:
         logging.info("run {self.connection} {command}")
 
-        result = await self.connection.run(command, check=False, env=env)
+        # Opening a channel sometimes fails, so this retries a few times until it works.
+        for retry in range(5):
+            try:
+                result = await self.connection.run(command, check=False, env=env)
+                break
+            except ChannelOpenError:
+                logging.debug(f"Retrying {retry}/3")
+                await asyncio.sleep(0)
 
         stdout = to_bytes(result.stdout)
         stderr = to_bytes(result.stderr)
