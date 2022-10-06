@@ -27,16 +27,19 @@ def parse_upgradeable(
 
 class AptPresent(Fact):
     name: str
+    version: Optional[str] = None
     path: Optional[Path] = None
 
-    def __init__(self, name: str, path: Optional[Path] = None):
+    def __init__(self, name: str, version: Optional[str] = None, path: Optional[Path] = None):
         self.name = name
+        self.version = version
         self.path = path
 
     async def enquire(self, host: Executor) -> bool:
         status = await host.check_output("dpkg -l {}".format(self.name), check=False)
+        version = self.version or ""
         for line in status.split("\n"):
-            if re.match(r"ii\s+{}(\:amd64)?\s+".format(self.name), line):
+            if re.match(r"ii\s+{}(:amd64)?\s+{}\s+".format(self.name, version), line):
                 return True
         return False
 
@@ -52,10 +55,12 @@ class AptPresent(Fact):
 
     @property
     def description(self) -> str:
+        result = self.name
+        if self.version:
+            result += f" version {self.version}"
         if self.path:
-            return f"{self.name} from {self.path}"
-        else:
-            return self.name
+            result += f" from {self.path}"
+        return result
 
 
 class AptAbsent(AptPresent):
