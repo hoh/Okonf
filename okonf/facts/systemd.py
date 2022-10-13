@@ -64,14 +64,18 @@ class ServiceRestarted(Fact):
 class ServiceEnabled(Fact):
     """Ensure that a Systemd is enabled"""
 
-    is_stateless = True
     name: str
 
     def __init__(self, name: str) -> None:
         self.name = name
 
     async def enquire(self, host: Executor) -> bool:
-        return False
+        command = "systemctl is-enabled --quiet {}".format(self.name)
+        try:
+            await host.check_output(command, check=True)
+            return True
+        except ShellError:
+            return False
 
     async def enforce(self, host: Executor) -> bool:
         async with host.lock(f"systemctl-service-{self.name}"):
