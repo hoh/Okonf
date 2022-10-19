@@ -2,7 +2,7 @@
 
 set -e
 
-pytest
+pytest -m "not slow"
 coverage html
 
 echo "Running Mypy"
