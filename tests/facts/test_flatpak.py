@@ -6,6 +6,7 @@ from okonf.facts.flatpak import FlatpakPresent, flathub_remote_added, FlatpakUpd
 
 
 @pytest.mark.asyncio
+@pytest.mark.slow
 async def test_flathub_remote():
     async with LocalHost() as host:
         await AptUpdated().apply(host)
@@ -17,6 +18,7 @@ async def test_flathub_remote():
 
 
 @pytest.mark.asyncio
+@pytest.mark.slow
 async def test_FlatpakPresent():
     async with LocalHost() as host:
         assert await flathub_remote_added.check(host)
@@ -29,6 +31,7 @@ async def test_FlatpakPresent():
 
 
 @pytest.mark.asyncio
+@pytest.mark.slow
 async def test_FlatpakUpdated():
     async with LocalHost() as host:
         assert await flathub_remote_added.check(host)
