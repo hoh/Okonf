@@ -5,7 +5,7 @@ from typing import Dict, Optional, Union
 import asyncssh
 from asyncssh import SSHClientConnection, ChannelOpenError
 
-from .abstract import CommandResult
+from .abstract import CommandResult, Host
 from .abstract import Executor
 
 
@@ -64,8 +64,12 @@ class SSHExecutor(Executor):
         async with self.connection.start_sftp_client() as sftp:
             await sftp.put(local_path, path)
 
+    @property
+    def hostname(self):
+        return self.connection._host
 
-class SSHHost:
+
+class SSHHost(Host):
     ssh_settings: Dict
     connection: SSHClientConnection
 
@@ -73,7 +77,7 @@ class SSHHost:
         self.ssh_settings = kwargs
         super().__init__()
 
-    async def __aenter__(self):
+    async def __aenter__(self) -> SSHExecutor:
         self.connection = await asyncssh.connect(**self.ssh_settings).__aenter__()
         return SSHExecutor(
             connection=self.connection,

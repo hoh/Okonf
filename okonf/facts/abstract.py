@@ -47,10 +47,17 @@ def all_stateless(iterable) -> bool:
 
 
 class FactCheck:
-    def __init__(self, fact: "Fact", result: Union[bool, Tuple]) -> None:
+    fact: "Fact"
+    result: Union[bool, Tuple]
+    hostname: str
+
+    def __init__(
+        self, fact: "Fact", result: Union[bool, Tuple], host: Executor
+    ) -> None:
         assert isinstance(result, bool) or isinstance(result, list)
         self.fact = fact
         self.result = result
+        self.hostname = host.hostname
 
     def __bool__(self) -> bool:
         if isinstance(self.result, bool):
@@ -71,10 +78,13 @@ class FactCheck:
 
 
 class FactResult:
-    def __init__(self, fact: "Fact", result: Union[bool, Tuple, List]) -> None:
+    def __init__(
+        self, fact: "Fact", result: Union[bool, Tuple, List], host: Executor
+    ) -> None:
         assert isinstance(result, bool) or isinstance(result, list)
         self.fact = fact
         self.result = result
+        self.hostname = host.hostname
 
     def __bool__(self) -> bool:
         if isinstance(self.result, bool):
@@ -106,16 +116,16 @@ class Fact:
         pass
 
     async def check(self, host: Executor) -> FactCheck:
-        result = FactCheck(self, await self.enquire(host))
+        result = FactCheck(self, await self.enquire(host), host)
         logging.info(str(result))
         return result
 
     async def apply(self, host: Executor) -> FactResult:
         """Apply the fact if it is not in place yet, returns higher level result"""
         if not await self.check(host):
-            result = FactResult(self, await self.enforce(host))
+            result = FactResult(self, await self.enforce(host), host)
         else:
-            result = FactResult(self, False)
+            result = FactResult(self, False, host)
         logging.info(str(result))
         return result
 

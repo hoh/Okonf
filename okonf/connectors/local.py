@@ -7,7 +7,7 @@ from typing import Optional, Dict
 
 import colorama
 
-from .abstract import Executor, CommandResult
+from .abstract import Executor, CommandResult, Host
 
 
 class LocalExecutor(Executor):
@@ -44,9 +44,13 @@ class LocalExecutor(Executor):
         path = expanduser(path)
         copyfile(local_path, path)
 
+    @property
+    def hostname(self):
+        return "local host"
 
-class LocalHost:
-    async def __aenter__(self):
+
+class LocalHost(Host):
+    async def __aenter__(self) -> LocalExecutor:
         return LocalExecutor(is_root=(os.getuid() == 0))
 
     async def __aexit__(self, *args, **kwargs):

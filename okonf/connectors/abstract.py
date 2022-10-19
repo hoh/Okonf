@@ -60,3 +60,17 @@ class Executor(ABC):
         if name not in self.locks:
             self.locks[name] = asyncio.Lock()
         return self.locks[name]
+
+    @property
+    def hostname(self):
+        raise NotImplementedError()
+
+
+class Host(ABC):
+    @abstractmethod
+    async def __aenter__(self) -> Executor:
+        raise NotImplementedError()
+
+    @abstractmethod
+    async def __aexit__(self, *args, **kwargs):
+        raise NotImplementedError()

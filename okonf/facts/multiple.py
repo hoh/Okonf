@@ -26,11 +26,11 @@ class Collection(Fact):
         :return:
         """
         result = await asyncio.gather(*(step.check(host) for step in self.facts))
-        return FactCheck(fact=self, result=result)
+        return FactCheck(fact=self, result=result, host=host)
 
     async def apply(self, host: Executor) -> FactResult:
         result = await asyncio.gather(*(step.apply(host) for step in self.facts))
-        return FactResult(fact=self, result=result)
+        return FactResult(fact=self, result=result, host=host)
 
     async def enquire(self, host: Executor) -> bool:
         raise NotImplementedError()
@@ -63,7 +63,7 @@ class Sequence(Collection):
         result = []
         for step in self.facts:
             result.append(await step.apply(host))
-        return FactResult(self, result)
+        return FactResult(self, result, host)
 
     def __add__(self, other: Union[Collection, "Sequence"]) -> Collection:
         if isinstance(other, Sequence):
