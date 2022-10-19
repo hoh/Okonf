@@ -1,18 +1,17 @@
 import asyncio
 import logging
-from typing import Tuple, Dict, NewType, Optional
+from typing import Tuple, Dict, NewType, Optional, Callable, Union, Awaitable
 
-from colorama import Fore
 from typer import Typer
 
-from .connectors.abstract import Executor
-from .facts.abstract import Fact
+from .connectors.abstract import Executor, Host
+from .facts.abstract import Fact, FactResult, FactCheck
 from .utils import run_coroutine, format_collection_result, setup_logger
 
 logging.basicConfig(level=logging.DEBUG)
 
 app = Typer()
-Hosts = NewType("Hosts", Dict[str, Executor])
+Hosts = NewType("Hosts", Dict[str, Host])
 
 
 def load_config(file_path: str) -> Tuple[Dict[str, Fact], Hosts]:
@@ -23,14 +22,20 @@ def load_config(file_path: str) -> Tuple[Dict[str, Fact], Hosts]:
     return file_configs, file_hosts
 
 
-async def run_on_host(host, operation):
-    async with host as connection:
-        return await operation(connection)
+async def run_on_host(
+    host: Host, operation: Callable[[Executor], Awaitable[Union[FactCheck, FactResult]]]
+):
+    async with host as executor:
+        return await operation(executor)
 
 
 @app.command()
 def check(
-    file_path: str, hosts: Optional[str] = None, debug: bool = False, info: bool = False
+    file_path: str,
+    hosts: Optional[str] = None,
+    sequential: bool = False,
+    debug: bool = False,
+    info: bool = False,
 ):
     setup_logger(debug, info)
 
@@ -41,26 +46,36 @@ def check(
     else:
         hosts_list = hosts.split(",")
 
-    for host in hosts_list:
-        target_host: Executor = file_hosts[host]
-        target_config = file_configs[host]
+    coroutines = [
+        run_on_host(file_hosts[host], file_configs[host].check) for host in hosts_list
+    ]
 
-        print(f"{Fore.WHITE}Host {Fore.CYAN}{host}{Fore.WHITE}:")
-        result = run_coroutine(
-            run_on_host(target_host, target_config.check), debug=debug
-        )
-        print(format_collection_result(result))
+    if sequential:
+        results = []
+        for coroutine in coroutines:
+            result = run_coroutine(coroutine, debug=debug)
+            print(format_collection_result(result))
+            results.append(result)
+    else:
+        results = run_coroutine(asyncio.gather(*coroutines))
+        for result in results:
+            print(format_collection_result(result))
 
     asyncio.get_event_loop().close()
-    return {"checked": result}
+    return {"checked": results}
 
 
 @app.command()
 def apply(
-    file_path: str, hosts: Optional[str] = None, debug: bool = False, info: bool = False
+    file_path: str,
+    hosts: Optional[str] = None,
+    sequential: bool = False,
+    debug: bool = False,
+    info: bool = False,
 ):
     setup_logger(debug, info)
 
+    file_configs: Dict[str, Fact]
     file_configs, file_hosts = load_config(file_path)
 
     if not hosts:
@@ -68,18 +83,23 @@ def apply(
     else:
         hosts_list = hosts.split(",")
 
-    for host in hosts_list:
-        target_host: Executor = file_hosts[host]
-        target_config = file_configs[host]
+    coroutines = [
+        run_on_host(file_hosts[host], file_configs[host].apply) for host in hosts_list
+    ]
 
-        print(f"{Fore.WHITE}Host {Fore.CYAN}{host}{Fore.WHITE}:")
-        result = run_coroutine(
-            run_on_host(target_host, target_config.apply), debug=debug
-        )
-        print(format_collection_result(result))
+    if sequential:
+        results = []
+        for coroutine in coroutines:
+            result = run_coroutine(coroutine, debug=debug)
+            print(format_collection_result(result))
+            results.append(result)
+    else:
+        results = run_coroutine(asyncio.gather(*coroutines))
+        for result in results:
+            print(format_collection_result(result))
 
     asyncio.get_event_loop().close()
-    return {"applied": result}
+    return {"applied": results}
 
 
 if __name__ == "__main__":

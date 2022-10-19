@@ -113,6 +113,10 @@ class FileContent(Fact):
             await host.put(self.remote_path, tmpfile.name)
         return True
 
+    @property
+    def description(self) -> str:
+        return '{"remote_path": self.remote_path, "content": ...}'
+
 
 class DirectoryPresent(Fact):
     """Ensure that a directory is present"""

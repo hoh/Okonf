@@ -2,6 +2,7 @@ from os.path import isfile
 import logging
 import asyncio
 from asyncio.subprocess import create_subprocess_exec
+from colorama import Fore
 
 
 def run_coroutine(task, debug=False):
@@ -44,7 +45,10 @@ def setup_logger(debug, info):
 def format_collection_result(result, level: int = 0):
     """Format the result of running check or apply on a collection of facts,
     recursively."""
-    output = "{}- {}\n".format("  " * level, result)
+    output = ""
+    if level == 0:
+        output += f"{Fore.LIGHTBLUE_EX}{result.hostname}{Fore.WHITE}\n"
+    output += "{}- {}\n".format("  " * level, result)
     try:
         for r in result.result:
             output += format_collection_result(r, level=level + 1)

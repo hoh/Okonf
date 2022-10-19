@@ -30,7 +30,9 @@ class AptPresent(Fact):
     version: Optional[str] = None
     path: Optional[Path] = None
 
-    def __init__(self, name: str, version: Optional[str] = None, path: Optional[Path] = None):
+    def __init__(
+        self, name: str, version: Optional[str] = None, path: Optional[Path] = None
+    ):
         self.name = name
         self.version = version
         self.path = path
