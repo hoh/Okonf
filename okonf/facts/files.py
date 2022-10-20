@@ -127,7 +127,9 @@ class FileExecutable(Fact):
     async def enquire(self, host: Executor) -> bool:
         command = "test -x {} && echo True || echo False".format(self.remote_path)
         result = await host.run(command)
-        return result.strip() == "True"
+
+        return result.stdout.decode("utf-8") == "True"
+
 
 
     async def enforce(self, host: Executor):
