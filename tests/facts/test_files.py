@@ -33,6 +33,31 @@ async def test_FilePresent():
 
 
 @pytest.mark.asyncio
+async def test_FileMode():
+    async with LocalHost() as host:
+        assert os.stat("/etc/hostname").st_mode & 0o777 == 0o644
+        assert await FilePresent("/etc/hostname", mode=0o644).check(host)
+        assert await FilePresent("/etc/hostname", mode="644").check(host)
+
+        filename = "/tmp/filename"
+        assert not await FilePresent(filename, mode=0o644).check(host)
+
+        try:
+            assert await FilePresent(filename, mode=0o644).apply(host)
+            assert os.path.isfile(filename)
+            assert os.stat(filename).st_mode & 0o777 == 0o644
+
+            # Change mode
+            assert await FilePresent(filename, mode=0o644).check(host)
+            assert not await FilePresent(filename, mode=0o666).check(host)
+            assert await FilePresent(filename, mode=0o666).apply(host)
+            assert os.stat(filename).st_mode & 0o777 == 0o666
+            assert await FilePresent(filename, mode=0o666).check(host)
+        finally:
+            os.remove(filename)
+
+
+@pytest.mark.asyncio
 async def test_FileAbsent():
     async with LocalHost() as host:
         filename = "/tmp/filename"
