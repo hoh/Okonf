@@ -159,15 +159,52 @@ class FileContent(Fact):
 class DirectoryPresent(Fact):
     """Ensure that a directory is present"""
 
-    def __init__(self, remote_path: str) -> None:
+    mode_int: Optional[int]
+
+    @property
+    def mode(self) -> Optional[str]:
+        if self.mode_int:
+            return oct(self.mode_int).strip("0o")
+        else:
+            return None
+
+    @property
+    def accepted_types(self):
+        if self.symbolic_link:
+            return "directory", "symbolic link"
+        else:
+            return "directory"
+
+    def __init__(
+        self,
+        remote_path: str,
+        mode: Optional[Union[int, str]] = None,
+        symbolic_link: bool = True,
+    ) -> None:
+        self.mode_int = int(mode, base=8) if isinstance(mode, str) else mode
         self.remote_path = remote_path
+        self.symbolic_link = symbolic_link
 
     async def enquire(self, host: Executor) -> bool:
-        command = "ls -d {}".format(self.remote_path)
-        return await host.check_output(command, check=False) != ""
+        command = f'stat -c "%a %F" {self.remote_path}'
+        try:
+            result = await host.check_output(command, no_such_file=True)
+            mode, type_ = result.split(" ", 1)
+            type_ = type_.strip("\n")
+
+            if type_ not in self.accepted_types:
+                return False
+            if self.mode and mode != self.mode:
+                return False
+            return True
+
+        except NoSuchFileError:
+            return False
 
     async def enforce(self, host: Executor) -> bool:
         await host.check_output("mkdir -p {}".format(self.remote_path))
+        if self.mode:
+            await host.check_output(f"chmod {self.mode} {self.remote_path}")
         return True
 
     @property
