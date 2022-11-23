@@ -1,4 +1,5 @@
 import os
+from abc import ABC
 from hashlib import sha256
 from os.path import join
 from tempfile import NamedTemporaryFile
@@ -11,8 +12,8 @@ from ..utils import get_local_file_hash
 from ..connectors.exceptions import NoSuchFileError
 
 
-class FilePresent(Fact):
-    """Ensure that a file is present"""
+class PathPresent(Fact, ABC):
+    """Abstract class containing methods common to FilePresent and DirectoryPresent."""
 
     remote_path: str
     mode_int: Optional[int]
@@ -24,13 +25,6 @@ class FilePresent(Fact):
             return oct(self.mode_int).strip("0o")
         else:
             return None
-
-    @property
-    def accepted_types(self):
-        if self.symbolic_link:
-            return "regular empty file", "regular file", "symbolic link"
-        else:
-            return "regular empty file", "regular file"
 
     def __init__(
         self,
@@ -57,6 +51,21 @@ class FilePresent(Fact):
 
         except NoSuchFileError:
             return False
+
+    @property
+    def description(self):
+        return str(self.remote_path)
+
+
+class FilePresent(PathPresent):
+    """Ensure that a file is present"""
+
+    @property
+    def accepted_types(self):
+        if self.symbolic_link:
+            return "regular empty file", "regular file", "symbolic link"
+        else:
+            return "regular empty file", "regular file"
 
     async def enforce(self, host: Executor) -> bool:
         await host.check_output("touch {}".format(self.remote_path))
@@ -156,23 +165,26 @@ class FileContent(Fact):
         return '{"remote_path": self.remote_path, "content": ...}'
 
 
-class DirectoryPresent(Fact):
+class DirectoryPresent(PathPresent):
     """Ensure that a directory is present"""
 
-    def __init__(self, remote_path: str) -> None:
-        self.remote_path = remote_path
-
-    async def enquire(self, host: Executor) -> bool:
-        command = "ls -d {}".format(self.remote_path)
-        return await host.check_output(command, check=False) != ""
+    @property
+    def accepted_types(self):
+        if self.symbolic_link:
+            return "directory", "symbolic link"
+        else:
+            return "directory"
 
     async def enforce(self, host: Executor) -> bool:
-        await host.check_output("mkdir -p {}".format(self.remote_path))
+        if self.mode:
+            await host.check_output(
+                f"mkdir --mode={self.mode} --parents {self.remote_path}"
+            )
+            # The mode is enforced in a second step since the mode of an existing directory will not be changed.
+            await host.check_output(f"chmod {self.mode} {self.remote_path}")
+        else:
+            await host.check_output(f"mkdir --parents {self.remote_path}")
         return True
-
-    @property
-    def description(self):
-        return str(self.remote_path)
 
 
 class DirectoryAbsent(DirectoryPresent):

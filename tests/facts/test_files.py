@@ -134,6 +134,28 @@ async def test_DirectoryPresent():
 
 
 @pytest.mark.asyncio
+async def test_DirectoryMode():
+    async with LocalHost() as host:
+        remote_path = "/tmp/filename"
+        assert not os.path.isdir(remote_path)
+        assert not await DirectoryPresent(remote_path, mode=0o644).check(host)
+
+        try:
+            assert await DirectoryPresent(remote_path, mode=0o644).apply(host)
+            assert os.path.isdir(remote_path)
+            assert os.stat(remote_path).st_mode & 0o777 == 0o644
+
+            # Change mode
+            assert await DirectoryPresent(remote_path, mode=0o644).check(host)
+            assert not await DirectoryPresent(remote_path, mode=0o666).check(host)
+            assert await DirectoryPresent(remote_path, mode=0o666).apply(host)
+            assert os.stat(remote_path).st_mode & 0o777 == 0o666
+            assert await DirectoryPresent(remote_path, mode=0o666).check(host)
+        finally:
+            os.rmdir(remote_path)
+
+
+@pytest.mark.asyncio
 async def test_DirectoryAbsent():
     async with LocalHost() as host:
         remote_path = "/tmp/dirname"
