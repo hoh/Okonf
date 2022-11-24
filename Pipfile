@@ -1,0 +1,10 @@
+[packages]
+
+[dev-packages]
+pytest = "*"
+pytest-cov = "*"
+pytest-flakes = "*"
+flake8 = "*"
+black = "*"
+mypy = "*"
+
