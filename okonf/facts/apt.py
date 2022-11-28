@@ -41,7 +41,7 @@ class AptPresent(Fact):
         status = await host.check_output("dpkg -l {}".format(self.name), check=False)
         version = self.version or ""
         for line in status.split("\n"):
-            if re.match(r"ii\s+{}(:amd64)?\s+{}\s+".format(self.name, version), line):
+            if re.match(r"ii\s+{}(:amd64)?\s+{}".format(self.name, version), line):
                 return True
         return False
 
