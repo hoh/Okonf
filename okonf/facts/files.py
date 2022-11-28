@@ -1,4 +1,5 @@
 import os
+from abc import ABC
 from hashlib import sha256
 from os.path import join
 from tempfile import NamedTemporaryFile
@@ -11,8 +12,8 @@ from ..utils import get_local_file_hash
 from ..connectors.exceptions import NoSuchFileError
 
 
-class FilePresent(Fact):
-    """Ensure that a file is present"""
+class PathPresent(Fact, ABC):
+    """Abstract class containing methods common to FilePresent and DirectoryPresent."""
 
     remote_path: str
     mode_int: Optional[int]
@@ -24,13 +25,6 @@ class FilePresent(Fact):
             return oct(self.mode_int).strip("0o")
         else:
             return None
-
-    @property
-    def accepted_types(self):
-        if self.symbolic_link:
-            return "regular empty file", "regular file", "symbolic link"
-        else:
-            return "regular empty file", "regular file"
 
     def __init__(
         self,
@@ -57,6 +51,21 @@ class FilePresent(Fact):
 
         except NoSuchFileError:
             return False
+
+    @property
+    def description(self):
+        return str(self.remote_path)
+
+
+class FilePresent(PathPresent):
+    """Ensure that a file is present"""
+
+    @property
+    def accepted_types(self):
+        if self.symbolic_link:
+            return "regular empty file", "regular file", "symbolic link"
+        else:
+            return "regular empty file", "regular file"
 
     async def enforce(self, host: Executor) -> bool:
         await host.check_output("touch {}".format(self.remote_path))
@@ -156,17 +165,8 @@ class FileContent(Fact):
         return '{"remote_path": self.remote_path, "content": ...}'
 
 
-class DirectoryPresent(Fact):
+class DirectoryPresent(PathPresent):
     """Ensure that a directory is present"""
-
-    mode_int: Optional[int]
-
-    @property
-    def mode(self) -> Optional[str]:
-        if self.mode_int:
-            return oct(self.mode_int).strip("0o")
-        else:
-            return None
 
     @property
     def accepted_types(self):
@@ -175,41 +175,16 @@ class DirectoryPresent(Fact):
         else:
             return "directory"
 
-    def __init__(
-        self,
-        remote_path: str,
-        mode: Optional[Union[int, str]] = None,
-        symbolic_link: bool = True,
-    ) -> None:
-        self.mode_int = int(mode, base=8) if isinstance(mode, str) else mode
-        self.remote_path = remote_path
-        self.symbolic_link = symbolic_link
-
-    async def enquire(self, host: Executor) -> bool:
-        command = f'stat -c "%a %F" {self.remote_path}'
-        try:
-            result = await host.check_output(command, no_such_file=True)
-            mode, type_ = result.split(" ", 1)
-            type_ = type_.strip("\n")
-
-            if type_ not in self.accepted_types:
-                return False
-            if self.mode and mode != self.mode:
-                return False
-            return True
-
-        except NoSuchFileError:
-            return False
-
     async def enforce(self, host: Executor) -> bool:
-        await host.check_output("mkdir -p {}".format(self.remote_path))
         if self.mode:
+            await host.check_output(
+                f"mkdir --mode={self.mode} --parents {self.remote_path}"
+            )
+            # The mode is enforced in a second step since the mode of an existing directory will not be changed.
             await host.check_output(f"chmod {self.mode} {self.remote_path}")
+        else:
+            await host.check_output(f"mkdir --parents {self.remote_path}")
         return True
-
-    @property
-    def description(self):
-        return str(self.remote_path)
 
 
 class DirectoryAbsent(DirectoryPresent):
