@@ -28,7 +28,7 @@ konsole-kpart/testing 4:20.12.3-1 amd64 [upgradable from: 4:20.12.2-1]
 )
 
 
-@patch('okonf.connectors.abstract.Executor.check_output')
+@patch("okonf.connectors.abstract.Executor.check_output")
 @pytest.mark.asyncio
 async def test_aptPresent_regex(mock_check_output):
     mock_check_output.return_value = """
