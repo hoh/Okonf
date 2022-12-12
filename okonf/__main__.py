@@ -1,11 +1,12 @@
 import asyncio
 import logging
-from typing import Tuple, Dict, NewType, Optional, Callable, Union, Awaitable
+from typing import Tuple, Dict, NewType, Optional
 
 from typer import Typer
 
-from .connectors.abstract import Executor, Host
-from .facts.abstract import Fact, FactResult, FactCheck
+from .connectors.abstract import Host
+from .facts.abstract import Fact
+from .run import run_on_host
 from .utils import run_coroutine, format_collection_result, setup_logger
 
 logging.basicConfig(level=logging.DEBUG)
@@ -20,13 +21,6 @@ def load_config(file_path: str) -> Tuple[Dict[str, Fact], Hosts]:
     file_hosts: Hosts = locals_["hosts"]
     file_configs = locals_["configs"]
     return file_configs, file_hosts
-
-
-async def run_on_host(
-    host: Host, operation: Callable[[Executor], Awaitable[Union[FactCheck, FactResult]]]
-):
-    async with host as executor:
-        return await operation(executor)
 
 
 @app.command()
