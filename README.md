@@ -26,11 +26,11 @@ Suggestions and contributions are welcome.
 ```python
 from okonf.connectors import LocalHost
 from okonf.facts.files import FileContent
-from okonf.utils import run
+from okonf.utils import run_coroutine
 
 host = LocalHost()
 
-run(
+run_coroutine(
     FileContent('/tmp/some_file', b'Some Content').apply(host),
 )
 ```
@@ -60,17 +60,20 @@ Declare your infrastructure in a Python file (here named `infra.py`) with your t
 For example, we like to have `vim`, `tree` and `htop` installed on our systems:
 
 ```python
+from okonf import Sequence
 from okonf.connectors import LocalHost
-from okonf.facts.apt import AptPresent
+from okonf.facts.files import FileContent
 
 hosts = {
     'laptop': LocalHost(),
 }
 
 configs = {
-    'laptop': Sequence(
-        AptPresent(pkg) for pkg in
-        ['vim', 'htop', 'tree'']
+    'laptop': Sequence((
+        FileContent(
+            remote_path=f'/tmp/hello-{i}.txt',
+            content=f"Hello number {i}.".encode(),
+        ) for i in range(3)),
     ),
 }
 ```
@@ -101,6 +104,11 @@ In the example below, the two facts help prividing a common functionnality,
 but they do not depend on each other and can be applied in parallel:
 
 ```python
+from okonf import Collection
+from okonf.facts.apt import AptPresent
+from okonf.facts.files import FileCopy
+
+
 vim_configured = Collection([
     AptPresent('vim'),
     FileCopy('~/.vimrc', 'vimrc'),
@@ -111,6 +119,12 @@ In this other example however, each fact depends on the previous one,
 so they are applied sequentially:
 
 ```python
+from okonf import Sequence
+from okonf.facts.apt import AptPresent
+from okonf.facts.files import DirectoryPresent
+from okonf.facts.python import Virtualenv, PipInstalled
+
+
 ipython_virtualenv = Sequence([
     AptPresent('virtualenv'),
     DirectoryPresent('~/.virtualenvs/'),
