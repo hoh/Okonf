@@ -100,7 +100,10 @@ class AptUpdated(Fact):
 
     async def enforce(self, host: Executor) -> bool:
         async with host.lock("apt-update"):
-            await host.check_output("sudo apt-get update")
+            if host.is_root:
+                await host.check_output("apt-get update")
+            else:
+                await host.check_output("sudo apt-get update")
         return True
 
 
@@ -115,7 +118,7 @@ class AptUpgraded(Fact):
         status = await host.check_output("apt list --upgradeable {}".format(names_str))
 
         if status.startswith("Listing...\n"):
-            status = status[len("Listing...\n") :]
+            status = status[len("Listing...\n"):]
 
         return {name: values for name, values in parse_upgradeable(status.split("\n"))}
 
@@ -125,7 +128,13 @@ class AptUpgraded(Fact):
 
     async def enforce(self, host: Executor) -> bool:
         async with host.lock("apt"):
-            await host.check_output(
-                "sudo apt-get upgrade --yes", env={"DEBIAN_FRONTEND": "noninteractive"}
-            )
+            if host.is_root:
+                await host.check_output(
+                    "apt-get upgrade --yes", env={"DEBIAN_FRONTEND": "noninteractive"}
+                )
+            else:
+                await host.check_output(
+                    "sudo apt-get upgrade --yes", env={"DEBIAN_FRONTEND": "noninteractive"}
+                )
+
         return True
