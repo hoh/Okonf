@@ -1,24 +1,14 @@
-FROM debian:bullseye
+FROM docker.io/library/debian:trixie
 
 RUN apt-get update && apt-get -y upgrade && apt-get -y install \
     --no-install-recommends \
-    python3-venv sudo git openssh-server
+    python3-pip python3-venv sudo git openssh-server
 
 RUN python3 -m venv /opt/venv
+RUN /opt/venv/bin/pip install hatch
 
-COPY requirements /opt/requirements
-RUN /opt/venv/bin/pip install -r /opt/requirements/tests.txt
-RUN /opt/venv/bin/pip install -r /opt/requirements/latest.txt
+COPY . /opt/okonf
 
-COPY okonf /opt/okonf
-COPY tests /opt/tests
-COPY pyproject.toml /opt/pyproject.toml
-COPY run_tests.sh /opt/run_tests.sh
+WORKDIR /opt/okonf
 
-# Load the virtualenv
-ENV PATH="/opt/venv/bin:$PATH"
-ENV PYTHONPATH="/opt/:/opt/venv/lib/python3.5"
-
-WORKDIR /opt
-
-CMD "/opt/run_tests.sh"
+CMD ["/opt/venv/bin/hatch", "run", "dev:test"]

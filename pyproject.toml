@@ -1,11 +1,97 @@
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[project]
+name = "Okonf"
+dynamic = ["version"]
+description = "Asynchronous configuration management based on Python Asyncio"
+readme = { file = "README.md", content-type = "text/markdown" }
+requires-python = ">=3.8"
+authors = [{ name = "Hugo Herter", email = "git@hugoherter.com" }]
+license = { text = "Apache-2.0" }
+keywords = ["configuration management"]
+classifiers = [
+  "Development Status :: 2 - Pre-Alpha",
+  "Environment :: Console",
+  "Programming Language :: Python :: 3",
+  "Intended Audience :: Developers",
+  "Intended Audience :: System Administrators",
+  "Intended Audience :: Information Technology",
+  "Natural Language :: English",
+  "Operating System :: POSIX :: Linux",
+  "License :: OSI Approved :: Apache Software License",
+  "Topic :: System :: Installation/Setup",
+  "Topic :: System :: Systems Administration",
+]
+dependencies = [
+  "asyncssh>=2.12.0",
+  "aiohttp>=3.8.3",
+  "colorama>=0.4.6",
+  "typer>=0.7.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/hoh/Okonf/"
+
+[project.optional-dependencies]
+lxd = ["pylxd"]
+test = [
+  "pytest>=7.2.0",
+  "pytest-cov>=4.0.0",
+  "pytest-flakes>=4.0.5",
+  "pytest-asyncio",
+  "flake8>=6.0.0",
+  "black>=22.10.0",
+  "mypy>=0.991",
+  "ruff>=0.1.0",
+  "types-Pygments",
+  "types-colorama",
+  "types-pexpect",
+]
+
+[project.scripts]
+okonf = "okonf.__main__:app"
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.build.targets.wheel]
+packages = ["okonf"]
+
+[tool.hatch.envs.default.scripts]
+test = "pytest {args}"
+test-cov = "pytest --cov-report=term-missing --cov-report=xml --cov=okonf {args}"
+
+[tool.hatch.envs.dev.scripts]
+typecheck = "mypy okonf"
+lint = [
+  "black --check --diff .",
+  "flake8 .",
+  "ruff check",
+]
+format = [
+  "black .",
+  "ruff fix",
+]
+
+[tool.hatch.envs.dev]
+features = ["test"]
+
+[tool.ruff]
+target-version = "py311"
+
+[tool.ruff.isort]
+known-first-party = ["okonf"]
+
 [tool.pytest.ini_options]
 addopts = "--flakes --cov"
 testpaths = [
-    "okonf",
-    "tests",
+  "okonf",
+  "tests",
 ]
 markers = [
-    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+  "slow: marks tests as slow (deselect with '-m \"not slow\"')",
 ]
 
 [tool.coverage.paths]
