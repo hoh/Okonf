@@ -73,7 +73,7 @@ async def test_FileHash():
     async with LocalHost() as host:
         filename = "/tmp/filename"
         expected_hash = (
-            b"ed7002b439e9ac845f22357d822bac14" b"44730fbdb6016d3ec9432297b9ec9f73"
+            b"ed7002b439e9ac845f22357d822bac1444730fbdb6016d3ec9432297b9ec9f73"
         )
 
         assert not os.path.isfile(filename)

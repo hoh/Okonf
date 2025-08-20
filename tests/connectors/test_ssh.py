@@ -41,7 +41,6 @@ async def test_SSHHost_put():
 
     ssh_host = SSHHost(host="localhost", username="root")
     async with ssh_host as host:
-
         assert await FilePresent("/etc/hostname").check(host)
 
         filename1 = "/tmp/tmpfile"

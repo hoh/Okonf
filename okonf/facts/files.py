@@ -307,16 +307,20 @@ class DirectoryCopy(Fact):
                     ),
                     title="Directories and files to be present",
                 ),
-                Sequence(
-                    (
-                        # Must remove files before directories
-                        Collection(files_to_remove, title="Files to be absent"),
-                        Collection(dirs_to_remove, title="Directories to be absent"),
-                    ),
-                    title="Directories and files to be absent",
-                )
-                if self.delete
-                else Collection(()),
+                (
+                    Sequence(
+                        (
+                            # Must remove files before directories
+                            Collection(files_to_remove, title="Files to be absent"),
+                            Collection(
+                                dirs_to_remove, title="Directories to be absent"
+                            ),
+                        ),
+                        title="Directories and files to be absent",
+                    )
+                    if self.delete
+                    else Collection(())
+                ),
             ),
             title=f"Directory copy from {self.local_path} to {self.remote_path}",
         )

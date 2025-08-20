@@ -10,7 +10,6 @@ from okonf.facts.files import FilePresent
 @pytest.mark.asyncio
 async def test_Collection():
     async with LocalHost() as host:
-
         filename1 = "/tmp/filename1"
         filename2 = "/tmp/filename2"
 
@@ -46,7 +45,6 @@ async def test_Collection():
 @pytest.mark.asyncio
 async def test_Sequence():
     async with LocalHost() as host:
-
         filename1 = "/tmp/filename1"
         filename2 = "/tmp/filename2"
 

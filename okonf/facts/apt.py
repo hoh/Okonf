@@ -17,12 +17,15 @@ def parse_upgradeable(
         match = re.match(RE_UPGRADEABLE, line)
         if match:
             name, source, next_version, arch, version = match.groups()
-            yield name, {
-                "source": source,
-                "next_version": next_version,
-                "arch": arch,
-                "version": version,
-            }
+            yield (
+                name,
+                {
+                    "source": source,
+                    "next_version": next_version,
+                    "arch": arch,
+                    "version": version,
+                },
+            )
 
 
 class AptPresent(Fact):

@@ -15,7 +15,6 @@ class CommandResult:
 
 
 class Executor(ABC):
-
     locks: Dict[str, Lock]
     is_root: bool
 
